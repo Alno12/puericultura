@@ -593,14 +593,16 @@ function gerarTexto(){
    L.push.apply(L,linhas(E.nascObs));L.push("");}
  }
  const ac=(E.acompRot&&E.acompRot!=="—")?(E.sexo==="F"?"ACOMPANHADA ":"ACOMPANHADO ")+E.acompRot+(E.acompNome?", "+E.acompNome:""):"";
- if(ac)L.push(ac);
+ if(ac){L.push(ac);L.push("");}
 
  L.push("S");
  L.push(tituloIdade());
+ L.push("");
 
  L.push("## QUEIXAS:");
  const q=linhas(E.queixas);
  if(q.length)q.forEach(x=>L.push(bullet(x)));else L.push("- SEM QUEIXAS NO MOMENTO");
+ L.push("");
 
  L.push("## ALEITAMENTO/ALIMENTAÇÃO:");
  const mi=idadeAv(),seis=(mi!=null&&mi>=6),ate6=(mi==null||mi<7);
@@ -617,17 +619,21 @@ function gerarTexto(){
  if(E.conjunto)L.push(E.conjunto);
  L.push("","");
 
- if(E.vacinas){L.push("## VACINAS");L.push(bullet(E.vacinas));}
+ if(E.vacinas){L.push("## VACINAS");L.push(bullet(E.vacinas));L.push("");}
  const md=Object.keys(E.meds).filter(k=>E.meds[k]),mx=linhas(E.medsTxt);
- if(md.length||mx.length){L.push("## MEDICAMENTOS EM USO");md.forEach(x=>L.push("- "+x));mx.forEach(x=>L.push(bullet(x)));}
+ if(md.length||mx.length){L.push("## MEDICAMENTOS EM USO");md.forEach(x=>L.push("- "+x));mx.forEach(x=>L.push(bullet(x)));L.push("");}
  const lst=AL[grupoAlerta(m)],on=lst.filter(x=>E.alertas[x]),off=lst.filter(x=>!E.alertas[x]);
  if(on.length)L.push("APRESENTA: "+on.join(", ")+".");
  if(off.length)L.push((on.length?"SEM OUTROS SINAIS DE ALERTA, TAIS COMO":rotAlerta(m))+": "+off.join(", ")+" OU OUTROS.");
+ L.push("");
  habVisiveis().forEach(h=>{const v=String(valPar("hab",h)).trim();if(v)L.push(h.frase?v:h.r+" = "+v);});
+ L.push("");
 
  L.push("O");
  antropo().linhas.forEach(l=>L.push(linhaAntropoTexto(l)));
+ L.push("");
  L.push.apply(L,linhas(E.exame));
+ L.push("");
  const f=faixaDe(idadeAv());
  if(E.marcosModo==="lista"&&f){
   const marcados=f.itens.filter(i=>E.marcos[i[0]]);
@@ -640,6 +646,7 @@ function gerarTexto(){
  }else L.push(cl.k==="adequado"||cl.k===""?"MARCOS DO DESENVOLVIMENTO PRESENTES":"MARCOS DO DESENVOLVIMENTO - VER OBSERVAÇÃO");
  L.push.apply(L,linhas(E.marcosObs));
  if(E.mchat)L.push("M-CHAT = "+E.mchat);
+ L.push("");
 
  L.push("A");
  L.push("PUERICULTURA");
@@ -647,6 +654,7 @@ function gerarTexto(){
  if((cl.k==="alerta"||cl.k==="atraso")&&av.indexOf("ALERTA PARA O DESENVOLVIMENTO")<0)L.push(cl.rot);
  av.forEach(x=>L.push(x));
  L.push.apply(L,linhas(E.avalTxt));
+ L.push("");
 
  L.push("P");
  Object.keys(E.plano).filter(k=>E.plano[k]).forEach(x=>L.push("- "+x));
@@ -654,6 +662,7 @@ function gerarTexto(){
  if(E.retorno)L.push("- RETORNO "+E.retorno);
  if(E.redeApoio)L.push("REDE DE APOIO "+E.redeApoio);
  if(E.anticoncep)L.push("ANTICONCEPCIONAL DA MÃE = "+E.anticoncep);
+ L.push("");
  return L.join("\n");
 }
 function caixaAlta(t){const g=[];
