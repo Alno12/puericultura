@@ -244,26 +244,26 @@ function rotAlerta(m){return m<6?"SEM SINAIS DE ALERTA, TAIS COMO":"SEM SINAIS D
    1º mês (pág. 69) · 2º mês (pág. 70) · 4º mês (pág. 71) · 6º ao 36º mês (pág. 72 a 74) */
 const HABITOS=[
  /* antes de 1 mês */
- {k:"localSono",r:"LOCAL QUE DORME",v:"BERÇO",ate:1},
+ {k:"localSono",r:"LOCAL QUE DORME",ph:"BERÇO",ate:1},
  /* 1º e 2º mês */
- {k:"sono",r:"TEMPO DE SONO EM 24 HORAS",v:"ADEQUADO",de:1,ate:4},
- {k:"posSono",r:"POSIÇÃO NO SONO",v:"BARRIGA PARA CIMA",ate:4},
- {k:"trocaPos",r:"TROCA DE POSIÇÃO DURANTE O DIA",v:"SIM",de:2,ate:4},
+ {k:"sono",r:"TEMPO DE SONO EM 24 HORAS",ph:"ADEQUADO",de:1,ate:4},
+ {k:"posSono",r:"POSIÇÃO NO SONO",ph:"BARRIGA PARA CIMA",ate:4},
+ {k:"trocaPos",r:"TROCA DE POSIÇÃO DURANTE O DIA",ph:"SIM",de:2,ate:4},
  /* até o 4º mês */
- {k:"intestinal",r:"HABITO INTESTINAL",v:"DIARIO",ate:6},
- {k:"higiene",r:"HIGIENE E CUIDADOS GERAIS",v:"ADEQUADOS",ate:6},
- {k:"bucal",r:"ORIENTAÇÕES SOBRE SAÚDE BUCAL",v:"ORIENTADO",de:2,ate:6},
- {k:"sf",r:"USO DE SORO FISIOLÓGICO NASAL",v:"NÃO - ORIENTO",de:2,ate:6},
+ {k:"intestinal",r:"HABITO INTESTINAL",ph:"DIARIO",ate:6},
+ {k:"higiene",r:"HIGIENE E CUIDADOS GERAIS",ph:"ADEQUADOS",ate:6},
+ {k:"bucal",r:"ORIENTAÇÕES SOBRE SAÚDE BUCAL",ph:"ORIENTADO",de:2,ate:6},
+ {k:"sf",r:"USO DE SORO FISIOLÓGICO NASAL",ph:"NÃO - ORIENTO",de:2,ate:6},
  /* 6º mês em diante */
- {k:"supFe",r:"SUPLEMENTAÇÃO DE FE/MICRONUTRIENTES",v:"SIM",de:6},
- {k:"supVitA",r:"SUPLEMENTAÇÃO DE VITAMINA A",v:"SIM",de:6},
- {k:"odonto",r:"ACOMPANHAMENTO ODONTOLOGICO",v:"SIM",de:6},
+ {k:"supFe",r:"SUPLEMENTAÇÃO DE FE/MICRONUTRIENTES",ph:"SIM",de:6},
+ {k:"supVitA",r:"SUPLEMENTAÇÃO DE VITAMINA A",ph:"SIM",de:6},
+ {k:"odonto",r:"ACOMPANHAMENTO ODONTOLOGICO",ph:"SIM",de:6},
  /* todas as fases */
- {k:"acidentes",r:"ACIDENTES DOMESTICOS",v:"NEGA"},
- {k:"violencia",r:"SINAIS DE VIOLENCIAS/NEGLIGENCIAS",v:"NÃO"},
+ {k:"acidentes",r:"ACIDENTES DOMESTICOS",ph:"NEGA"},
+ {k:"violencia",r:"SINAIS DE VIOLENCIAS/NEGLIGENCIAS",ph:"NÃO"},
  /* a partir de 1 mês */
- {k:"lacos",r:"LAÇOS DE AFETO",v:"OK",de:1},
- {k:"interacao",r:"INTERAÇÃO MÃE-FILHO",v:"ADEQUADO",de:1}];
+ {k:"lacos",r:"LAÇOS DE AFETO",ph:"OK",de:1},
+ {k:"interacao",r:"INTERAÇÃO MÃE-FILHO",ph:"ADEQUADO",de:1}];
 
 /* ===== EXAME FÍSICO PADRÃO, POR IDADE ===== */
 function exameBase(m){
@@ -305,7 +305,7 @@ function zerar(){E={sexo:E.sexo||"F",consulta:E.consulta||"2m",nome:"",dn:"",dc:
  acompRot:E.acompRot||"DA MÃE",acompOutro:"",acompNome:"",nascOn:false,nasc:{},
  aleit:"",lm:false,la:false,marca:"",aleitObs:"",dific:"",dificTxt:"",parou:false,parouMes:"",parouUnid:"MESES",parouMotivo:"",
  complementar:"",frutas:"",indust:"",conjuntos:{},conjuntoDet:{},acompTxt:"",
- vacinas:"VACINAS EM DIA",vacAtraso:"",meds:{},medsDet:{},medsTxt:"",queixas:"",hab:{},
+ vacinas:"VACINAS EM DIA",vacAtraso:"",meds:{},medsDet:{},medsTxt:"",queixas:"",hab:{},habTxt:"",
  alertas:{},alertaDet:{},alertaExtra:"",
  peso:"",comp:"",pc:"",exame:"",exameEd:false,
  marcosModo:"resumo",marcos:{},marcosObs:"",mchat:"",fatores:{},pcZ:false,fenot:false,
@@ -453,7 +453,7 @@ function tgs(mapa,itens,cls){return '<div class="toggles">'+itens.map(t=>'<butto
  '" data-key="'+esc(t)+'" aria-pressed="'+(E[mapa][t]?"true":"false")+'"><span class="mark"></span>'+esc(t)+'</button>').join("")+'</div>';}
 function pils(k,ops){return '<div class="pilulas">'+ops.map(o=>'<button class="pil" data-pil="'+k+'" data-v="'+esc(o)+
  '" aria-pressed="'+(E[k]===o?"true":"false")+'">'+esc(o)+'</button>').join("")+'</div>';}
-function valPar(store,h){const v=E[store][h.k];return v===undefined?h.v:v;}
+function valPar(store,h){const v=E[store][h.k];return v===undefined?(h.v||""):v;}
 function pares(store,lista){return '<div class="pares">'+lista.map(h=>'<div class="par"><label for="p_'+store+h.k+'">'+esc(h.r)+
  '</label><input id="p_'+store+h.k+'" data-par="'+store+'" data-key="'+h.k+'" data-foco="'+store+h.k+'" value="'+
  esc(valPar(store,h))+'" placeholder="'+esc(h.ph||"vazio = não sai")+'" autocomplete="off"></div>').join("")+'</div>';}
@@ -570,7 +570,8 @@ function bHabitos(){
  const lista=HABITOS.filter(h=>(h.de==null||m==null||m>=h.de)&&(h.ate==null||m==null||m<h.ate));
  const f=faseCuidados(m);
  const h='<p class="mini"><b>## HABITOS E CUIDADOS:</b> — Caderneta da Criança, "Atenção e cuidados especiais nesta fase"'+
-  (f?' · fase: <b>'+f+'</b>':'')+'</p>'+pares("hab",lista);
+  (f?' · fase: <b>'+f+'</b>':'')+'</p>'+pares("hab",lista)+
+  '<div class="grade" style="margin-top:10px">'+ta("habTxt","Outras informações","- ORIENTADO SOBRE PREVENÇÃO DE ACIDENTES","codigo")+'</div>';
  return bloco("S","Hábitos e cuidados","campo vazio não sai no texto",h);
 }
 
@@ -719,6 +720,7 @@ function gerarTexto(){
  }
  const hb=[];
  habVisiveis().forEach(h=>{const v=String(valPar("hab",h)).trim();if(v)hb.push(h.frase?v:h.r+" = "+v);});
+ linhas(E.habTxt).forEach(x=>hb.push(x));
  if(hb.length){L.push("## HABITOS E CUIDADOS:");L.push.apply(L,hb);L.push("");}
 
  L.push("O");
