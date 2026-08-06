@@ -103,6 +103,10 @@ textarea.codigo{font-family:var(--mono);font-size:12.5px;line-height:1.5;min-hei
 .par input{flex:1;min-width:0;border:1px solid var(--linha2);border-radius:5px;padding:4px 8px;background:#FBFDFC}
 .par input:focus{border-color:var(--petroleo);background:#fff}
 .par input:placeholder-shown{background:#F4F7F6;color:var(--tinta3)}
+/* o texto do prontuário é guardado em caixa normal; na tela os rótulos
+   que vêm dele continuam aparecendo em maiúsculas */
+.cx,.par label,.linha-alerta .rot-alerta,#acompRot{text-transform:uppercase}
+
 /* sinais de alerta: rótulo + presente/ausente + observação */
 .linha-alerta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:6px}
 .linha-alerta .rot-alerta{font-family:var(--ui);font-size:12px;letter-spacing:.04em;color:var(--tinta2);flex:0 0 210px}
@@ -234,89 +238,89 @@ const FATORES=["Vulnerabilidade social","Reside em área de risco","Deficiência
 /* ===== SINAIS DE ALERTA — no seu texto ===== */
 /* fichas de consulta da Caderneta da Criança, 2ª ed.:
    1ª semana (pág. 68) · 1º mês (pág. 69) · 2º mês (pág. 70) · 4º mês (pág. 71) · 6º ao 36º mês (pág. 72 a 74) */
-const AL_LAC=["SECREÇÃO NASAL","COLICAS","ENGASGOS","DIARREIA","CONSTIPAÇÃO","VOMITOS","GOLFADAS","DIFICULDADES PARA RESPIRAR","FEBRE","HIPOTERMIA","CONVULSÕES","MOVIMENTOS ANORMAIS"];
+const AL_LAC=["Secreção nasal","Cólicas","Engasgos","Diarreia","Constipação","Vômitos","Golfadas","Dificuldades para respirar","Febre","Hipotermia","Convulsões","Movimentos anormais"];
 const AL={
- sem1:["COTO UMBILICAL INFECCIONADO","ICTERICIA","DIARREIA","VOMITOS","DIFICULDADES PARA RESPIRAR","FEBRE","HIPOTERMIA","CONVULSÕES","MOVIMENTOS ANORMAIS","AUSCULTA CARDIACA ALTERADA","CIANOSE"],
+ sem1:["Coto umbilical infeccionado","Icterícia","Diarreia","Vômitos","Dificuldades para respirar","Febre","Hipotermia","Convulsões","Movimentos anormais","Ausculta cardíaca alterada","Cianose"],
  m1:AL_LAC,
- m2:AL_LAC.concat(["CRIPTORQUIDIA"]),
- m4:AL_LAC.concat(["HERNIA INGUINAL/UMBILICAL"]),
- m6:["DIARREIA","VOMITOS","FEBRE","SIBILANCIAS","DIFICULDADES PARA RESPIRAR","CONVULSÕES","TREMORES"]};
+ m2:AL_LAC.concat(["Criptorquidia"]),
+ m4:AL_LAC.concat(["Hérnia inguinal/umbilical"]),
+ m6:["Diarreia","Vômitos","Febre","Sibilâncias","Dificuldades para respirar","Convulsões","Tremores"]};
 function grupoAlerta(m){return m<1?"sem1":m<2?"m1":m<4?"m2":m<6?"m4":"m6";}
 /* criptorquidia só se aplica a meninos */
-function listaAlerta(m){return AL[grupoAlerta(m)].filter(x=>x!=="CRIPTORQUIDIA"||E.sexo==="M");}
-function rotAlerta(m){return m<6?"SEM SINAIS DE ALERTA, TAIS COMO":"SEM SINAIS DE ALARME, TAIS COMO";}
+function listaAlerta(m){return AL[grupoAlerta(m)].filter(x=>x!=="Criptorquidia"||E.sexo==="M");}
+function rotAlerta(m){return m<6?"Sem sinais de alerta, tais como":"Sem sinais de alarme, tais como";}
 
 /* ===== LINHAS "CHAVE = VALOR" DO S ===== */
 /* "Atenção e cuidados especiais nesta fase" — Caderneta da Criança, 2ª ed.
    1º mês (pág. 69) · 2º mês (pág. 70) · 4º mês (pág. 71) · 6º ao 36º mês (pág. 72 a 74) */
 const HABITOS=[
  /* antes de 1 mês */
- {k:"localSono",r:"LOCAL QUE DORME",ph:"BERÇO",ate:1},
+ {k:"localSono",r:"Local que dorme",ph:"berço",ate:1},
  /* 1º e 2º mês */
- {k:"sono",r:"TEMPO DE SONO EM 24 HORAS",ph:"ADEQUADO",de:1,ate:4},
- {k:"posSono",r:"POSIÇÃO NO SONO",ph:"BARRIGA PARA CIMA",ate:4},
- {k:"trocaPos",r:"TROCA DE POSIÇÃO DURANTE O DIA",ph:"SIM",de:2,ate:4},
+ {k:"sono",r:"Tempo de sono em 24 horas",ph:"adequado",de:1,ate:4},
+ {k:"posSono",r:"Posição no sono",ph:"barriga para cima",ate:4},
+ {k:"trocaPos",r:"Troca de posição durante o dia",ph:"sim",de:2,ate:4},
  /* até o 4º mês */
- {k:"intestinal",r:"HABITO INTESTINAL",ph:"DIARIO",ate:6},
- {k:"higiene",r:"HIGIENE E CUIDADOS GERAIS",ph:"ADEQUADOS",ate:6},
- {k:"bucal",r:"ORIENTAÇÕES SOBRE SAÚDE BUCAL",ph:"ORIENTADO",de:2,ate:6},
- {k:"sf",r:"USO DE SORO FISIOLÓGICO NASAL",ph:"NÃO - ORIENTO",de:2,ate:6},
+ {k:"intestinal",r:"Hábito intestinal",ph:"diário",ate:6},
+ {k:"higiene",r:"Higiene e cuidados gerais",ph:"adequados",ate:6},
+ {k:"bucal",r:"Orientações sobre saúde bucal",ph:"orientado",de:2,ate:6},
+ {k:"sf",r:"Uso de soro fisiológico nasal",ph:"não - oriento",de:2,ate:6},
  /* 6º mês em diante */
- {k:"supFe",r:"SUPLEMENTAÇÃO DE FE/MICRONUTRIENTES",ph:"SIM",de:6},
- {k:"supVitA",r:"SUPLEMENTAÇÃO DE VITAMINA A",ph:"SIM",de:6},
- {k:"odonto",r:"ACOMPANHAMENTO ODONTOLOGICO",ph:"SIM",de:6},
+ {k:"supFe",r:"Suplementação de Fe/micronutrientes",ph:"sim",de:6},
+ {k:"supVitA",r:"Suplementação de vitamina A",ph:"sim",de:6},
+ {k:"odonto",r:"Acompanhamento odontológico",ph:"sim",de:6},
  /* todas as fases */
- {k:"acidentes",r:"ACIDENTES DOMESTICOS",ph:"NEGA"},
- {k:"violencia",r:"SINAIS DE VIOLENCIAS/NEGLIGENCIAS",ph:"NÃO"},
+ {k:"acidentes",r:"Acidentes domésticos",ph:"nega"},
+ {k:"violencia",r:"Sinais de violências/negligências",ph:"não"},
  /* a partir de 1 mês */
- {k:"lacos",r:"LAÇOS DE AFETO",ph:"OK",de:1},
- {k:"interacao",r:"INTERAÇÃO MÃE-FILHO",ph:"ADEQUADO",de:1}];
+ {k:"lacos",r:"Laços de afeto",ph:"ok",de:1},
+ {k:"interacao",r:"Interação mãe-filho",ph:"adequado",de:1}];
 
 /* ===== EXAME FÍSICO PADRÃO, POR IDADE ===== */
 function exameBase(m){
- const L=["BNF R 2T SS","MV + BILATERAL SRA"];
- L.push(m<1.2?"ABDOME INOCENTE, RHA + NORMOFONETICOS - COTO UMBILICAL SEM SINAIS DE INFECÇÃO":"ABDOME INOCENTE, RHA + NORMOFONETICOS");
- if(m<20){L.push("FONTANELA ANTERIOR ABERTA E NORMOTENSA");L.push("FONTANELA POSTERIOR FECHADA");}
- else L.push("FONTANELAS FECHADAS");
- L.push("EXAME OCULAR SEM ALTERAÇÕES","TRV NORMAL","OROSCOPIA SEM ALTERAÇÕES","OTOSCOPIA SEM ALTERAÇÕES",
-  "ECTOSCOPIA SEM ALTERAÇÕES","GENITALIA SEM ALTERAÇÕES","PERINEO SEM ALTERAÇÕES",
-  "HIDRATADO, CORADO, ANICTERICO, ACIANÓTICO","PERFUSÃO ADEQUADA");
- L.push(m<3?"REFLEXOS PRIMITIVOS ADEQUADOS":"REFLEXOS ADEQUADOS");
+ const L=["BNF R 2T SS","MV + bilateral SRA"];
+ L.push(m<1.2?"Abdome inocente, RHA + normofonéticos - coto umbilical sem sinais de infecção":"Abdome inocente, RHA + normofonéticos");
+ if(m<20){L.push("Fontanela anterior aberta e normotensa");L.push("Fontanela posterior fechada");}
+ else L.push("Fontanelas fechadas");
+ L.push("Exame ocular sem alterações","TRV normal","Oroscopia sem alterações","Otoscopia sem alterações",
+  "Ectoscopia sem alterações","Genitália sem alterações","Períneo sem alterações",
+  "Hidratado, corado, anictérico, acianótico","Perfusão adequada");
+ L.push(m<3?"Reflexos primitivos adequados":"Reflexos adequados");
  return L.join("\n");
 }
-const ACHADOS=["ABDOME COM PRESENÇA DE HERNIA UMBILICAL, SEM SINAIS FLOGISTICOS LOCAIS","HIPOCORADO","ECTOSCOPIA COM PAPULAS HIPEREMIADAS EM FACE E REGIÃO CERVICAL","OROSCOPIA COM HIPEREMIA DE OROFARINGE","OTOSCOPIA COM HIPEREMIA DE MEMBRANA TIMPANICA","TRV NÃO REALIZADO","SECREÇÃO OCULAR / LACRIMEJAMENTO","CRIPTORQUIDIA","FIMOSE FISIOLOGICA","SINEQUIA DE PEQUENOS LABIOS"];
+const ACHADOS=["Abdome com presença de hérnia umbilical, sem sinais flogísticos locais","Hipocorado","Ectoscopia com pápulas hiperemiadas em face e região cervical","Oroscopia com hiperemia de orofaringe","Otoscopia com hiperemia de membrana timpânica","TRV não realizado","Secreção ocular / lacrimejamento","Criptorquidia","Fimose fisiológica","Sinéquia de pequenos lábios"];
 
 /* ===== CHIPS RÁPIDOS ===== */
-const MEDS=["VITAMINA D 200UI - 2 GOTAS 1 X AO DIA","VITAMINA A + D - 2 GOTAS 1 X AO DIA","SULFATO FERROSO - 1 GOTA POR QUILO/DIA","NENHUM"];
-const VAC=["VACINAS EM DIA","VACINAS EM ATRASO"];
-const ALEIT6=["ALEITAMENTO MATERNO EXCLUSIVO","ALEITAMENTO MATERNO + LEITE ARTIFICIAL","LEITE ARTIFICIAL"];
-const MARCAS=["NESTOGENO","APTAMIL","NAN","NINHO"];
-const CONJUNTO=["EM ACOMPANHAMENTO CONJUNTO NA U.M.I","EM ACOMPANHAMENTO CONJUNTO NO M.A.C.C.","EM ACOMPANHAMENTO CONJUNTO COM PEDIATRA PARTICULAR"];
-const UNID_PAROU=["DIAS","MESES","ANOS"];
-const PLANO=["DOU ORIENTAÇÕES","ORIENTO ESTIMULOS PARA IDADE","REFORÇO USO DE SUPLEMENTAÇÃO DE FERRO","REFORÇO USO DE VITAMINA D","ORIENTO ALIMENTAÇÃO COMPLEMENTAR SAUDAVEL","ORIENTO PREVENÇÃO DE ACIDENTES","ORIENTO HIGIENE BUCAL","SOLICITO EXAMES + RETORNO APOS EXAMES","ENCAMINHO A PEDIATRIA","ENCAMINHO A ODONTOLOGIA","ENCAMINHO A FONOAUDIOLOGIA","ENCAMINHO A OFTALMOLOGIA"];
-const AVAL=["ALERTA PARA O DESENVOLVIMENTO","ATRASO NA FALA","HERNIA UMBILICAL","DERMATITE DE FRALDAS","OBSTRUÇÃO DE CANAL LACRIMAL","REFLUXO GASTROESOFAGICO FISIOLOGICO","CONSTIPAÇÃO INTESTINAL","QUADRO GRIPAL","ANEMIA FERROPRIVA"];
-const ACOMPS=["DA MÃE","DO PAI","DOS PAIS","DA AVÓ MATERNA","DA AVÓ PATERNA","DA TIA","DO RESPONSÁVEL","OUTROS","—"];
+const MEDS=["Vitamina D 200UI - 2 gotas 1 x ao dia","Vitamina A + D - 2 gotas 1 x ao dia","Sulfato ferroso - 1 gota por quilo/dia","Nenhum"];
+const VAC=["Vacinas em dia","Vacinas em atraso"];
+const ALEIT6=["Aleitamento materno exclusivo","Aleitamento materno + leite artificial","Leite artificial"];
+const MARCAS=["Nestogeno","Aptamil","NAN","Ninho"];
+const CONJUNTO=["Em acompanhamento conjunto na U.M.I","Em acompanhamento conjunto no M.A.C.C.","Em acompanhamento conjunto com pediatra particular"];
+const UNID_PAROU=["dias","meses","anos"];
+const PLANO=["Dou orientações","Oriento estímulos para idade","Reforço uso de suplementação de ferro","Reforço uso de vitamina D","Oriento alimentação complementar saudável","Oriento prevenção de acidentes","Oriento higiene bucal","Solicito exames + retorno após exames","Encaminho a pediatria","Encaminho a odontologia","Encaminho a fonoaudiologia","Encaminho a oftalmologia"];
+const AVAL=["Alerta para o desenvolvimento","Atraso na fala","Hérnia umbilical","Dermatite de fraldas","Obstrução de canal lacrimal","Refluxo gastroesofágico fisiológico","Constipação intestinal","Quadro gripal","Anemia ferropriva"];
+const ACOMPS=["da mãe","do pai","dos pais","da avó materna","da avó paterna","da tia","do responsável","Outros","—"];
 
 /* ===== CONSULTAS ===== */
 const CONSULTAS=[{id:"1sem",rot:"1ª sem",m:0.25,cor:"--f-neo"},{id:"1m",rot:"1 mês",m:1,cor:"--f-neo"},
 {id:"2m",rot:"2 meses",m:2,cor:"--f-lac"},{id:"4m",rot:"4 meses",m:4,cor:"--f-lac"},{id:"6m",rot:"6 meses",m:6,cor:"--f-lac"},
 {id:"9m",rot:"9 meses",m:9,cor:"--f-lac2"},{id:"12m",rot:"12 meses",m:12,cor:"--f-lac2"},{id:"18m",rot:"18 meses",m:18,cor:"--f-lac2"},
 {id:"24m",rot:"24 meses",m:24,cor:"--f-tod"},{id:"36m",rot:"36 meses",m:36,cor:"--f-tod"},{id:"avulsa",rot:"Outra",m:null,cor:"--f-pre"}];
-const RETORNOS={"1sem":"AOS 30 DIAS DE VIDA","1m":"AOS 2 MESES DE VIDA","2m":"AOS 4 MESES DE VIDA","4m":"AOS 6 MESES DE VIDA","6m":"AOS 9 MESES DE VIDA","9m":"AOS 12 MESES DE VIDA","12m":"AOS 18 MESES DE VIDA","18m":"AOS 24 MESES DE VIDA","24m":"AOS 36 MESES DE VIDA","36m":"EM 12 MESES","avulsa":""};
+const RETORNOS={"1sem":"aos 30 dias de vida","1m":"aos 2 meses de vida","2m":"aos 4 meses de vida","4m":"aos 6 meses de vida","6m":"aos 9 meses de vida","9m":"aos 12 meses de vida","12m":"aos 18 meses de vida","18m":"aos 24 meses de vida","24m":"aos 36 meses de vida","36m":"em 12 meses","avulsa":""};
 </script>
 <script>
 /* ===== ESTADO ===== */
 const hoje=new Date().toISOString().slice(0,10);
 let E={};
 function zerar(){E={sexo:E.sexo||"F",consulta:E.consulta||"2m",nome:"",dn:"",dc:hoje,ig:"",igd:"",
- acompRot:E.acompRot||"DA MÃE",acompOutro:"",acompNome:"",nascOn:false,nasc:{},
+ acompRot:E.acompRot||"da mãe",acompOutro:"",acompNome:"",nascOn:false,nasc:{},
  aleit:"",lm:false,la:false,marca:"",aleitObs:"",dific:"",dificTxt:"",parou:false,parouMes:"",parouUnid:"MESES",parouMotivo:"",
  complementar:"",frutas:"",indust:"",conjuntos:{},conjuntoDet:{},acompTxt:"",
  vacinas:"",vacAtraso:"",meds:{},medsDet:{},medsTxt:"",queixas:"",hab:{},habTxt:"",
  alertas:{},alertaDet:{},alertaExtra:"",
  peso:"",comp:"",pc:"",exame:"",exameEd:false,
  marcosModo:"resumo",marcos:{},marcosObs:"",mchat:"",fatores:{},pcZ:false,fenot:false,
- aval:{},avalTxt:"",plano:{},planoTxt:"",retorno:"",redeApoio:"ADEQUADA",anticoncep:"",
+ aval:{},avalTxt:"",plano:{},planoTxt:"",retorno:"",redeApoio:"adequada",anticoncep:"",
  caixaAlta:E.caixaAlta!==false,semAcento:!!E.semAcento,_tocou:false};}
 zerar();
 
@@ -343,11 +347,11 @@ function idadeDetalhe(){
 const idadeAv=()=>{const i=idadeDetalhe();return i?(i.corrigida!=null?i.corrigida:i.meses):null;};
 const pad2=n=>(n<10?"0":"")+n;
 function tituloIdade(){
- const i=idadeDetalhe();if(!i)return"PUERICULTURA";
- const D=pad2(i.dia)+" DIAS DE VIDA";
- if(i.anos>=1)return"PUERICULTURA DE "+i.anos+(i.anos>1?" ANOS ":" ANO ")+pad2(i.mes)+(i.mes===1?" MES E ":" MESES E ")+D;
- if(i.mes<1)return"PUERICULTURA DE "+i.dias+" DIAS DE VIDA";
- return"PUERICULTURA DE "+i.mes+(i.mes===1?" MES E ":" MESES E ")+D;
+ const i=idadeDetalhe();if(!i)return"Puericultura";
+ const D=pad2(i.dia)+" dias de vida";
+ if(i.anos>=1)return"Puericultura de "+i.anos+(i.anos>1?" anos ":" ano ")+pad2(i.mes)+(i.mes===1?" mês e ":" meses e ")+D;
+ if(i.mes<1)return"Puericultura de "+i.dias+" dias de vida";
+ return"Puericultura de "+i.mes+(i.mes===1?" mês e ":" meses e ")+D;
 }
 function textoIdadeCurto(){
  const i=idadeDetalhe();if(!i)return null;
@@ -385,10 +389,10 @@ function percentil(z){
 function classifZ(ind,z){
  if(z==null)return null;
  z=Math.round(z*100)/100;
- if(ind==="wfa")return z<-3?["MUITO BAIXO PESO","ru"]:z<-2?["BAIXO PESO","ru"]:z<=2?["ADEQUADO","ok"]:["PESO ELEVADO","at"];
- if(ind==="hfa")return z<-3?["MUITO BAIXA ESTATURA","ru"]:z<-2?["BAIXA ESTATURA","ru"]:["ADEQUADO","ok"];
- if(ind==="bmi")return z<-3?["MAGREZA ACENTUADA","ru"]:z<-2?["MAGREZA","ru"]:z<=1?["ADEQUADO","ok"]:z<=2?["RISCO DE SOBREPESO","at"]:z<=3?["SOBREPESO","ru"]:["OBESIDADE","ru"];
- return z<-2?["MICROCEFALIA","ru"]:z<=2?["ADEQUADO","ok"]:["MACROCEFALIA","ru"];}
+ if(ind==="wfa")return z<-3?["Muito baixo peso","ru"]:z<-2?["Baixo peso","ru"]:z<=2?["Adequado","ok"]:["Peso elevado","at"];
+ if(ind==="hfa")return z<-3?["Muito baixa estatura","ru"]:z<-2?["Baixa estatura","ru"]:["Adequado","ok"];
+ if(ind==="bmi")return z<-3?["Magreza acentuada","ru"]:z<-2?["Magreza","ru"]:z<=1?["Adequado","ok"]:z<=2?["Risco de sobrepeso","at"]:z<=3?["Sobrepeso","ru"]:["Obesidade","ru"];
+ return z<-2?["Microcefalia","ru"]:z<=2?["Adequado","ok"]:["Macrocefalia","ru"];}
 const sinalZ=z=>(z<0?"\u2212":"+")+fmt(Math.abs(z),2);
 
 function antropo(){
@@ -397,8 +401,8 @@ function antropo(){
  const linhas=[];
  const add=(ind,rot,x,un,dec)=>{if(!x)return;const z=zEscore(ind,x,m);
   linhas.push({ind:ind,rot:rot,x:x,un:un,dec:dec,z:z,pc:percentil(z),cl:classifZ(ind,z)});};
- add("wfa","PESO",p?p/1000:null,"g",0);
- add("hfa",(m!=null&&m>=24)?"ESTATURA":"COMPRIMENTO",c,"CM",1);
+ add("wfa","Peso",p?p/1000:null,"g",0);
+ add("hfa",(m!=null&&m>=24)?"Estatura":"Comprimento",c,"CM",1);
  add("hcfa","PC",pc,"CM",1);
  add("bmi","IMC",imc,"",2);
  return{imc:imc,linhas:linhas,m:m};
@@ -406,9 +410,9 @@ function antropo(){
 function linhaAntropoTexto(l){
  let v;
  const semZero=n=>fmt(n,1).replace(",0","");
- if(l.ind==="wfa")v="PESO = "+(l.x*1000).toLocaleString("pt-BR")+" GRAMAS";
+ if(l.ind==="wfa")v="Peso = "+(l.x*1000).toLocaleString("pt-BR")+" gramas";
  else if(l.ind==="bmi")v="IMC = "+fmt(l.x,2);
- else v=l.rot+" = "+semZero(l.x)+" CM";
+ else v=l.rot+" = "+semZero(l.x)+" cm";
  if(l.cl)v+=" - "+l.cl[0];
  if(l.z!=null)v+=" - escore-z "+sinalZ(l.z)+" / percentil "+fmt(l.pc,1);
  return v;
@@ -419,33 +423,33 @@ function classificar(){
  const ant=faixaAnt(f),marcados=f.itens.filter(i=>E.marcos[i[0]]).length;
  const ausA=f.itens.some(i=>E.marcos[i[0]]==="NÃO"),ausP=ant?ant.itens.some(i=>E.marcos[i[0]]==="NÃO"):false;
  const risco=Object.keys(E.fatores).some(k=>E.fatores[k]);
- const atraso={k:"atraso",rot:"PROVÁVEL ATRASO NO DESENVOLVIMENTO",css:"v-atraso",conduta:"Acionar a rede de atenção especializada."};
- const alerta={k:"alerta",rot:"ALERTA PARA O DESENVOLVIMENTO",css:"v-alerta",conduta:"Orientar estímulos e marcar retorno em 30 dias."};
+ const atraso={k:"atraso",rot:"Provável atraso no desenvolvimento",css:"v-atraso",conduta:"Acionar a rede de atenção especializada."};
+ const alerta={k:"alerta",rot:"Alerta para o desenvolvimento",css:"v-alerta",conduta:"Orientar estímulos e marcar retorno em 30 dias."};
  if(E.pcZ||E.fenot||ausP||(!ant&&ausA))return atraso;
  if(ausA)return alerta;
- if(E.marcosModo==="resumo")return{k:"adequado",rot:"MARCOS DO DESENVOLVIMENTO PRESENTES",css:"v-ok",conduta:"Sai como uma linha só no O."};
+ if(E.marcosModo==="resumo")return{k:"adequado",rot:"Marcos do desenvolvimento presentes",css:"v-ok",conduta:"Sai como uma linha só no O."};
  if(marcados===0)return{k:"",rot:"Marcos ainda não avaliados",css:"v-vazio",conduta:"Use “Todos presentes” ou marque um a um."};
  if(risco)return alerta;
- return{k:"adequado",rot:"DESENVOLVIMENTO ADEQUADO PARA A IDADE",css:"v-ok",conduta:"Todos os marcos da faixa estão presentes."};
+ return{k:"adequado",rot:"Desenvolvimento adequado para a idade",css:"v-ok",conduta:"Todos os marcos da faixa estão presentes."};
 }
 </script>
 <script>
 /* ===== BLOCO DE NASCIMENTO ===== */
-const NASC=[{k:"gravidez",r:"GRAVIDEZ",v:"PLANEJADA"},{k:"prenatal",r:"PRE NATAL",v:"SIM",ph:"SIM, 9 CONSULTAS, INICIOU NO 1 TRIMESTRE"},
-{k:"tipoGrav",r:"TIPO DE GRAVIDEZ",v:"UNICA"},{k:"risco",r:"GRAVIDEZ DE RISCO",v:"NÃO"},
-{k:"parto",r:"PARTO",v:"VAGINAL"},{k:"localParto",r:"LOCAL DO PARTO",v:"",ph:"HOSPITAL"},
-{k:"acompParto",r:"ACOMPANHANTE NO PARTO",v:"",ph:"MARIDO"},{k:"pele",r:"CONTATO PELE A PELE",v:"SIM"},
-{k:"mamou",r:"MAMOU NA 1ª HORA",v:"SIM"},{k:"apgar",r:"APGAR",v:"",ph:"8/9"},
-{k:"clamp",r:"CLAMPEAMENTO OPORTUNO",v:"SIM"},{k:"igNasc",r:"IG AO NASCER",v:"",ph:"39 SEMANAS E 3 DIAS - CAPURRO"},
-{k:"pesoN",r:"PESO AO NASCER",v:"",ph:"2.918"},{k:"compN",r:"COMPRIMENTO",v:"",ph:"46 CM"},{k:"pcN",r:"PC",v:"",ph:"34 CM"},
-{k:"adeq",r:"ADEQUAÇÃO PESO/IG",v:"AIG"},{k:"reanim",r:"REANIMAÇÃO NEONATAL",v:"NÃO"},
-{k:"assist",r:"RN ASSISTIDO POR",v:"",ph:"PEDIATRA"},{k:"tsMae",r:"TIPO SANGUINEO DA MÃE",v:""},
-{k:"tsBebe",r:"TIPO SANGUINEO DO BEBÊ",v:""},{k:"coombs",r:"COOMBS",v:""},
-{k:"oftal",r:"PREVENÇÃO OFTALMICA",v:"SIM"},{k:"hemo",r:"PREVENÇÃO HEMORRAGICA",v:"SIM"},
-{k:"intern",r:"INTERNAÇÃO",v:"NÃO"},{k:"alta",r:"DATA DA ALTA",v:""},{k:"pesoAlta",r:"PESO NA ALTA",v:""},
-{k:"alimAlta",r:"ALIMENTAÇÃO NA ALTA",v:"LEITE MATERNO EXCLUSIVO"}];
-const TRIAG=[{k:"olhinho",r:"OLHINHO",v:"NORMAL"},{k:"coracao",r:"CORAÇÃOZINHO",v:"NORMAL"},
-{k:"orelhinha",r:"ORELHINHA",v:"",ph:"AGENDADO PARA __/__/____"},{k:"pezinho",r:"PEZINHO",v:"",ph:"NORMAL / NÃO DISPONIVEL"}];
+const NASC=[{k:"gravidez",r:"Gravidez",v:"planejada"},{k:"prenatal",r:"Pré-natal",v:"sim",ph:"sim, 9 consultas, iniciou no 1º trimestre"},
+{k:"tipoGrav",r:"Tipo de gravidez",v:"única"},{k:"risco",r:"Gravidez de risco",v:"não"},
+{k:"parto",r:"Parto",v:"vaginal"},{k:"localParto",r:"Local do parto",v:"",ph:"hospital"},
+{k:"acompParto",r:"Acompanhante no parto",v:"",ph:"marido"},{k:"pele",r:"Contato pele a pele",v:"sim"},
+{k:"mamou",r:"Mamou na 1ª hora",v:"sim"},{k:"apgar",r:"Apgar",v:"",ph:"8/9"},
+{k:"clamp",r:"Clampeamento oportuno",v:"sim"},{k:"igNasc",r:"IG ao nascer",v:"",ph:"39 semanas e 3 dias - Capurro"},
+{k:"pesoN",r:"Peso ao nascer",v:"",ph:"2.918"},{k:"compN",r:"Comprimento",v:"",ph:"46 cm"},{k:"pcN",r:"PC",v:"",ph:"34 cm"},
+{k:"adeq",r:"Adequação peso/IG",v:"AIG"},{k:"reanim",r:"Reanimação neonatal",v:"não"},
+{k:"assist",r:"RN assistido por",v:"",ph:"pediatra"},{k:"tsMae",r:"Tipo sanguíneo da mãe",v:""},
+{k:"tsBebe",r:"Tipo sanguíneo do bebê",v:""},{k:"coombs",r:"Coombs",v:""},
+{k:"oftal",r:"Prevenção oftálmica",v:"sim"},{k:"hemo",r:"Prevenção hemorrágica",v:"sim"},
+{k:"intern",r:"Internação",v:"não"},{k:"alta",r:"Data da alta",v:""},{k:"pesoAlta",r:"Peso na alta",v:""},
+{k:"alimAlta",r:"Alimentação na alta",v:"leite materno exclusivo"}];
+const TRIAG=[{k:"olhinho",r:"Olhinho",v:"normal"},{k:"coracao",r:"Coraçãozinho",v:"normal"},
+{k:"orelhinha",r:"Orelhinha",v:"",ph:"agendado para __/__/____"},{k:"pezinho",r:"Pezinho",v:"",ph:"normal / não disponível"}];
 
 /* ===== CONSTRUTORES ===== */
 let nB=0;
@@ -458,7 +462,7 @@ function inp(k,rot,ph,larg){return '<div class="campo"><label for="i_'+k+'">'+ro
  '" data-foco="'+k+'" value="'+esc(E[k])+'" placeholder="'+esc(ph||"")+'" style="width:'+(larg||160)+'px" autocomplete="off"></div>';}
 function tgs(mapa,itens,cls){return '<div class="toggles">'+itens.map(t=>'<button class="tg '+(cls||"")+'" data-map="'+mapa+
  '" data-key="'+esc(t)+'" aria-pressed="'+(E[mapa][t]?"true":"false")+'"><span class="mark"></span>'+esc(t)+'</button>').join("")+'</div>';}
-function pils(k,ops){return '<div class="pilulas">'+ops.map(o=>'<button class="pil" data-pil="'+k+'" data-v="'+esc(o)+
+function pils(k,ops){return '<div class="pilulas">'+ops.map(o=>'<button class="pil cx" data-pil="'+k+'" data-v="'+esc(o)+
  '" aria-pressed="'+(E[k]===o?"true":"false")+'">'+esc(o)+'</button>').join("")+'</div>';}
 function valPar(store,h){const v=E[store][h.k];return v===undefined?(h.v||""):v;}
 function pares(store,lista){return '<div class="pares">'+lista.map(h=>'<div class="par"><label for="p_'+store+h.k+'">'+esc(h.r)+
@@ -469,18 +473,18 @@ function pares(store,lista){return '<div class="pares">'+lista.map(h=>'<div clas
 function bNasc(){if(!E.nascOn)return"";
  return bloco("N","Dados do nascimento e triagens",'<button class="btn-mini" data-acao="fecharNasc">ocultar</button>',
   pares("nasc",NASC)+'<p class="mini" style="margin:12px 0 6px"><b>TRIAGENS NEONATAIS</b></p>'+pares("nasc",TRIAG)+
-  '<div class="grade" style="margin-top:10px">'+ta("nascObs","Observações do nascimento / alta","EXAME FISICO DO RN NORMAL. FRENECTOMIA. OROLANI NEGATIVO.")+'</div>',"--f-neo");}
+  '<div class="grade" style="margin-top:10px">'+ta("nascObs","Observações do nascimento / alta","exame físico do RN normal. Frenectomia. Ortolani negativo.")+'</div>',"--f-neo");}
 
 /* mantém o aleitamento ao cruzar os 6 meses: até lá é uma pílula (aleit),
    a partir daí são dois botões (lm/la) — converte de um formato para o outro */
 function normalizaAleit(){
  const m=idadeAv(),seis=(m!=null&&m>=6);
  if(seis&&E.aleit){
-  if(E.aleit.indexOf("MATERNO")>=0)E.lm=true;
-  if(E.aleit.indexOf("ARTIFICIAL")>=0)E.la=true;
+  if(/materno/i.test(E.aleit))E.lm=true;
+  if(/artificial/i.test(E.aleit))E.la=true;
   E.aleit="";
  }else if(!seis&&(E.lm||E.la)){
-  E.aleit=(E.lm&&E.la)?"ALEITAMENTO MATERNO + LEITE ARTIFICIAL":E.lm?"ALEITAMENTO MATERNO EXCLUSIVO":"LEITE ARTIFICIAL";
+  E.aleit=(E.lm&&E.la)?ALEIT6[1]:E.lm?ALEIT6[0]:ALEIT6[2];
   E.lm=false;E.la=false;
  }
 }
@@ -488,36 +492,36 @@ function normalizaAleit(){
 function bAlim(){
  const m=idadeAv(),ate6=(m==null||m<7);      // dificuldade para amamentar: até a consulta de 6 meses
  const seis=(m!=null&&m>=6);
- const usaLA=seis?E.la:(E.aleit.indexOf("LEITE ARTIFICIAL")>=0);
+ const usaLA=seis?E.la:/artificial/i.test(E.aleit);
  let h='<p class="mini"><b>## ALEITAMENTO/ALIMENTAÇÃO:</b></p>';
  if(seis){
   h+='<div class="toggles">'+
-    '<button class="tg verde" data-bool="lm" aria-pressed="'+(E.lm?"true":"false")+'"><span class="mark"></span>LEITE MATERNO</button>'+
-    '<button class="tg verde" data-bool="la" aria-pressed="'+(E.la?"true":"false")+'"><span class="mark"></span>LEITE ARTIFICIAL</button></div>';
+    '<button class="tg verde cx" data-bool="lm" aria-pressed="'+(E.lm?"true":"false")+'"><span class="mark"></span>Leite materno</button>'+
+    '<button class="tg verde cx" data-bool="la" aria-pressed="'+(E.la?"true":"false")+'"><span class="mark"></span>Leite artificial</button></div>';
  }else{
   h+=pils("aleit",ALEIT6);
  }
- h+='<div class="grade" style="margin-top:9px">'+inp("aleitObs","Outras informações (some após a escolha, com um –)","EX.: MAMA A LIVRE DEMANDA",320)+'</div>';
+ h+='<div class="grade" style="margin-top:9px">'+inp("aleitObs","Outras informações (some após a escolha, com um –)","ex.: mama a livre demanda",320)+'</div>';
  if(usaLA){
   h+='<div style="margin-top:9px;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">'+
-   '<div class="pilulas">'+MARCAS.map(x=>'<button class="pil" data-pil="marca" data-v="'+x+'" aria-pressed="'+(E.marca===x?"true":"false")+'">'+x+'</button>').join("")+'</div>'+
-   inp("marca","Qual leite artificial","NESTOGENO",190)+'</div>';
+   '<div class="pilulas">'+MARCAS.map(x=>'<button class="pil cx" data-pil="marca" data-v="'+x+'" aria-pressed="'+(E.marca===x?"true":"false")+'">'+x+'</button>').join("")+'</div>'+
+   inp("marca","Qual leite artificial","Nestogeno",190)+'</div>';
  }
  if(ate6){
   h+='<div class="toggles" style="margin-top:12px">'+
-   '<button class="tg verde" data-pil2="dific" data-v="SEM" aria-pressed="'+(E.dific==="SEM"?"true":"false")+'"><span class="mark"></span>SEM DIFICULDADES PARA AMAMENTAR</button>'+
-   '<button class="tg" data-pil2="dific" data-v="COM" aria-pressed="'+(E.dific==="COM"?"true":"false")+'"><span class="mark"></span>COM DIFICULDADES PARA AMAMENTAR</button>'+
+   '<button class="tg verde cx" data-pil2="dific" data-v="SEM" aria-pressed="'+(E.dific==="SEM"?"true":"false")+'"><span class="mark"></span>Sem dificuldades para amamentar</button>'+
+   '<button class="tg cx" data-pil2="dific" data-v="COM" aria-pressed="'+(E.dific==="COM"?"true":"false")+'"><span class="mark"></span>Com dificuldades para amamentar</button>'+
    (E.dific==="COM"?'<span style="flex:1;min-width:220px"><input data-in="dificTxt" data-foco="dificTxt" value="'+esc(E.dificTxt)+
-     '" placeholder="QUAL DIFICULDADE - EX.: FISSURA MAMILAR" style="width:100%;border:1px solid var(--brasa);border-radius:var(--r);padding:5px 9px" autocomplete="off"></span>':'')+
+     '" placeholder="qual dificuldade - ex.: fissura mamilar" style="width:100%;border:1px solid var(--brasa);border-radius:var(--r);padding:5px 9px" autocomplete="off"></span>':'')+
    '</div>';
  }
  h+='<div class="toggles" style="margin-top:12px;align-items:center">'+
-  '<button class="tg" data-bool="parou" aria-pressed="'+(E.parou?"true":"false")+'"><span class="mark"></span>PAROU DE AMAMENTAR AOS</button>'+
+  '<button class="tg cx" data-bool="parou" aria-pressed="'+(E.parou?"true":"false")+'"><span class="mark"></span>Parou de amamentar aos</button>'+
   '<input data-in="parouMes" data-foco="parouMes" value="'+esc(E.parouMes)+'" placeholder="X" style="width:64px;border:1px solid var(--linha);border-radius:var(--r);padding:5px 9px" autocomplete="off">'+
-  '<div class="pilulas">'+UNID_PAROU.map(u=>'<button class="pil" data-pil="parouUnid" data-v="'+u+'" aria-pressed="'+(E.parouUnid===u?"true":"false")+'">'+u+'</button>').join("")+'</div></div>';
- if(E.parou)h+='<div class="grade" style="margin-top:9px">'+inp("parouMotivo","Motivo","RETORNO AO TRABALHO",280)+'</div>';
- if(m==null||m>=4)h+='<div class="grade" style="margin-top:12px">'+ta("complementar","Alimentação complementar","COME DE TUDO - FRUTAS, ARROZ, FEIJÃO, LEGUMES, VERDURA, CARNE, OVOS")+'</div>'+
-   '<div class="grade" style="margin-top:9px">'+inp("frutas","Frutas por dia","2 A 3 X POR DIA",170)+inp("indust","Alimentos industrializados","NÃO",200)+'</div>';
+  '<div class="pilulas">'+UNID_PAROU.map(u=>'<button class="pil cx" data-pil="parouUnid" data-v="'+u+'" aria-pressed="'+(E.parouUnid===u?"true":"false")+'">'+u+'</button>').join("")+'</div></div>';
+ if(E.parou)h+='<div class="grade" style="margin-top:9px">'+inp("parouMotivo","Motivo","retorno ao trabalho",280)+'</div>';
+ if(m==null||m>=4)h+='<div class="grade" style="margin-top:12px">'+ta("complementar","Alimentação complementar","come de tudo - frutas, arroz, feijão, legumes, verdura, carne, ovos")+'</div>'+
+   '<div class="grade" style="margin-top:9px">'+inp("frutas","Frutas por dia","2 a 3 x por dia",170)+inp("indust","Alimentos industrializados","não",200)+'</div>';
  return bloco("S","Aleitamento e alimentação","",h);
 }
 
@@ -526,25 +530,25 @@ function bAcomp(){
  h+=CONJUNTO.map(function(o,i){
   const on=!!E.conjuntos[o];
   return '<div style="display:flex;gap:9px;align-items:flex-start;flex-wrap:wrap;margin-bottom:7px">'+
-   '<button class="tg verde" data-map="conjuntos" data-key="'+esc(o)+'" aria-pressed="'+(on?"true":"false")+'"><span class="mark"></span>'+esc(o)+'</button>'+
+   '<button class="tg verde cx" data-map="conjuntos" data-key="'+esc(o)+'" aria-pressed="'+(on?"true":"false")+'"><span class="mark"></span>'+esc(o)+'</button>'+
    (on?'<textarea data-par="conjuntoDet" data-key="'+esc(o)+'" data-foco="conjDet'+i+'" class="codigo" '+
-     'placeholder="- SOLICITADO EXAMES&#10;- ENCAMINHADO A NEUROLOGIA" '+
+     'placeholder="- solicitado exames&#10;- encaminhado a neurologia" '+
      'style="flex:1;min-width:250px;min-height:38px">'+esc(E.conjuntoDet[o]||"")+'</textarea>':'')+
    '</div>';
  }).join("");
- h+='<div class="grade" style="margin-top:10px">'+ta("acompTxt","Outras informações","- RETORNO AGENDADO PARA 28/08/2026","codigo")+'</div>';
+ h+='<div class="grade" style="margin-top:10px">'+ta("acompTxt","Outras informações","- retorno agendado para 28/08/2026","codigo")+'</div>';
  return bloco("S","Acompanhamento","",h);
 }
 
 function bQueixas(){
  let h='<p class="mini"><b>## QUEIXAS:</b> — uma por linha, com hífen</p>'+
-  '<div class="grade">'+ta("queixas","","- SEM QUEIXAS NO MOMENTO","codigo")+'</div>';
+  '<div class="grade">'+ta("queixas","","- sem queixas no momento","codigo")+'</div>';
  return bloco("S","Queixas","",h);
 }
 function bVacinas(){
  let h='<p class="mini"><b>## VACINAS</b></p>'+pils("vacinas",VAC);
  if(E.vacinas==="VACINAS EM ATRASO")
-  h+='<div class="grade" style="margin-top:9px">'+ta("vacAtraso","Quais vacinas estão em atraso","- BCG\n- TRIPLICE VIRAL","codigo")+'</div>';
+  h+='<div class="grade" style="margin-top:9px">'+ta("vacAtraso","Quais vacinas estão em atraso","- BCG\n- tríplice viral","codigo")+'</div>';
  return bloco("S","Vacinas","",h);
 }
 
@@ -553,12 +557,12 @@ function bMeds(){
  h+=MEDS.map(function(o,i){
   const on=!!E.meds[o];
   return '<div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:7px">'+
-   '<button class="tg verde" data-map="meds" data-key="'+esc(o)+'" aria-pressed="'+(on?"true":"false")+'"><span class="mark"></span>'+esc(o)+'</button>'+
+   '<button class="tg verde cx" data-map="meds" data-key="'+esc(o)+'" aria-pressed="'+(on?"true":"false")+'"><span class="mark"></span>'+esc(o)+'</button>'+
    (on?'<input data-par="medsDet" data-key="'+esc(o)+'" data-foco="medsDet'+i+'" value="'+esc(E.medsDet[o]||"")+
-     '" placeholder="INFORMAÇÕES ADICIONAIS" style="flex:1;min-width:220px;border:1px solid var(--linha);border-radius:var(--r);padding:5px 9px" autocomplete="off">':'')+
+     '" placeholder="informações adicionais" style="flex:1;min-width:220px;border:1px solid var(--linha);border-radius:var(--r);padding:5px 9px" autocomplete="off">':'')+
    '</div>';
  }).join("");
- h+='<div class="grade" style="margin-top:8px">'+ta("medsTxt","Outros medicamentos","- OUTRO MEDICAMENTO - POSOLOGIA","codigo")+'</div>';
+ h+='<div class="grade" style="margin-top:8px">'+ta("medsTxt","Outros medicamentos","- outro medicamento - posologia","codigo")+'</div>';
  return bloco("S","Medicamentos em uso","",h);
 }
 
@@ -575,10 +579,10 @@ function bAlerta(){
    '<div class="pilulas"><button class="pil" data-tri="alertas" data-key="'+esc(o)+'" data-v="PRESENTE" aria-pressed="'+(v==="PRESENTE"?"true":"false")+'">PRESENTE</button>'+
    '<button class="pil" data-tri="alertas" data-key="'+esc(o)+'" data-v="AUSENTE" aria-pressed="'+(v==="AUSENTE"?"true":"false")+'">AUSENTE</button></div>'+
    '<input data-par="alertaDet" data-key="'+esc(o)+'" data-foco="alertaDet'+i+'" value="'+esc(E.alertaDet[o]||"")+
-    '" placeholder="INFORMAÇÕES ADICIONAIS" style="flex:1;min-width:170px;border:1px solid var(--linha);border-radius:var(--r);padding:4px 9px" autocomplete="off">'+
+    '" placeholder="informações adicionais" style="flex:1;min-width:170px;border:1px solid var(--linha);border-radius:var(--r);padding:4px 9px" autocomplete="off">'+
    '</div>';
  }).join("");
- h+='<div class="grade" style="margin-top:10px">'+ta("alertaExtra","Outros sinais de alerta presentes","- SINAL FORA DA LISTA","codigo")+'</div>';
+ h+='<div class="grade" style="margin-top:10px">'+ta("alertaExtra","Outros sinais de alerta presentes","- sinal fora da lista","codigo")+'</div>';
  return bloco("S","Sinais de alerta",n?'<b style="color:var(--brasa)">'+n+' presente'+(n>1?"s":"")+'</b>':"nenhum presente",h);
 }
 
@@ -592,7 +596,7 @@ function bHabitos(){
  const f=faseCuidados(m);
  const h='<p class="mini"><b>## HABITOS E CUIDADOS:</b> — Caderneta da Criança, "Atenção e cuidados especiais nesta fase"'+
   (f?' · fase: <b>'+f+'</b>':'')+'</p>'+pares("hab",lista)+
-  '<div class="grade" style="margin-top:10px">'+ta("habTxt","Outras informações","- ORIENTADO SOBRE PREVENÇÃO DE ACIDENTES","codigo")+'</div>';
+  '<div class="grade" style="margin-top:10px">'+ta("habTxt","Outras informações","- orientado sobre prevenção de acidentes","codigo")+'</div>';
  return bloco("S","Hábitos e cuidados","campo vazio não sai no texto",h);
 }
 
@@ -620,7 +624,7 @@ function bExame(){
  if(E.exame===""&&!E.exameEd)E.exame=exameBase(idadeAv()||0);
  return bloco("O","Exame físico",'<button class="btn-mini" data-acao="resetExame">restaurar padrão</button>',
   ta("exame","","","codigo")+'<p class="mini" style="margin:9px 0 5px">Trocar uma linha por um achado:</p>'+
-  '<div class="pilulas">'+ACHADOS.map(a=>'<button class="pil add" data-add="exame" data-v="'+esc(a)+'">+ '+esc(a)+'</button>').join("")+'</div>');
+  '<div class="pilulas">'+ACHADOS.map(a=>'<button class="pil add cx" data-add="exame" data-v="'+esc(a)+'">+ '+esc(a)+'</button>').join("")+'</div>');
 }
 
 function bDesenv(){
@@ -642,8 +646,8 @@ function bDesenv(){
    '<button class="btn-mini" data-acao="limpaMarcos">Limpar</button></div>'+listar(f,"Faixa da criança");
   if(falta&&ant)h+='<p class="mini" style="color:var(--brasa)"><b>Marco ausente.</b> Verifique a faixa anterior, como manda o instrumento da Caderneta.</p>'+listar(ant,"Faixa anterior");
  }
- h+='<div class="grade" style="margin-top:10px">'+ta("marcosObs","Observação sobre o desenvolvimento","***** NÃO FALA MAMÃ, PAPÁ")+'</div>';
- if(m!=null&&m>=15&&m<=32)h+='<div class="grade" style="margin-top:9px">'+inp("mchat","M-CHAT-R","0 PONTOS - BAIXO RISCO",240)+'</div>';
+ h+='<div class="grade" style="margin-top:10px">'+ta("marcosObs","Observação sobre o desenvolvimento","***** não fala mamã, papá")+'</div>';
+ if(m!=null&&m>=15&&m<=32)h+='<div class="grade" style="margin-top:9px">'+inp("mchat","M-CHAT-R","0 pontos - baixo risco",240)+'</div>';
  h+='<p class="mini" style="margin:13px 0 5px"><b>Fatores de risco</b></p>'+tgs("fatores",FATORES)+
   '<div class="toggles" style="margin-top:6px">'+
   '<button class="tg" data-bool="pcZ" aria-pressed="'+(E.pcZ?"true":"false")+'"><span class="mark"></span>PC fora de \u22122 a +2 escore-z</button>'+
@@ -654,17 +658,17 @@ function bDesenv(){
 }
 
 function bAval(){
- return bloco("A","Avaliação","PUERICULTURA sai sempre",tgs("aval",AVAL)+
+ return bloco("A","Avaliação","PUERICULTURA sai sempre",tgs("aval",AVAL,"cx")+
   '<div class="grade" style="margin-top:9px">'+ta("avalTxt","Outros diagnósticos","","codigo")+'</div>');
 }
 
 function bPlano(){
  const c=consultaAtual();
  if(E.retorno===""&&RETORNOS[c.id]&&!E._retTocado)E.retorno=RETORNOS[c.id];
- return bloco("P","Plano","",tgs("plano",PLANO,"verde")+
-  '<div class="grade" style="margin-top:10px">'+ta("planoTxt","Outras condutas (uma por linha, com hífen)","- LACTULOSE 5 ML 1 X AO DIA SE NECESSARIO","codigo")+'</div>'+
-  '<div class="grade" style="margin-top:9px">'+inp("retorno","Retorno","AOS 4 MESES DE VIDA",230)+
-  inp("redeApoio","Rede de apoio","ADEQUADA",150)+inp("anticoncep","Anticoncepcional da mãe","DESOGESTREL 75 MCG",220)+'</div>');
+ return bloco("P","Plano","",tgs("plano",PLANO,"verde cx")+
+  '<div class="grade" style="margin-top:10px">'+ta("planoTxt","Outras condutas (uma por linha, com hífen)","- lactulose 5 ml 1 x ao dia se necessário","codigo")+'</div>'+
+  '<div class="grade" style="margin-top:9px">'+inp("retorno","Retorno","aos 4 meses de vida",230)+
+  inp("redeApoio","Rede de apoio","adequada",150)+inp("anticoncep","Anticoncepcional da mãe","desogestrel 75 mcg",220)+'</div>');
 }
 </script>
 <script>
@@ -684,8 +688,8 @@ function gerarTexto(){
    if(t.length){L.push("TRIAGENS NEONATAIS");L.push.apply(L,t);}
    L.push.apply(L,linhas(E.nascObs));L.push("");}
  }
- const rotAc=E.acompRot==="OUTROS"?E.acompOutro:E.acompRot;
- const ac=(rotAc&&E.acompRot!=="—")?(E.sexo==="F"?"ACOMPANHADA ":"ACOMPANHADO ")+rotAc+(E.acompNome?", "+E.acompNome:""):"";
+ const rotAc=E.acompRot==="Outros"?E.acompOutro:E.acompRot;
+ const ac=(rotAc&&E.acompRot!=="—")?(E.sexo==="F"?"Acompanhada ":"Acompanhado ")+rotAc+(E.acompNome?", "+E.acompNome:""):"";
  if(ac){L.push(ac);L.push("");}
 
  L.push("S");
@@ -694,23 +698,23 @@ function gerarTexto(){
 
  L.push("## QUEIXAS:");
  const q=linhas(E.queixas);
- if(q.length)q.forEach(x=>L.push(bullet(x)));else L.push("- SEM QUEIXAS NO MOMENTO");
+ if(q.length)q.forEach(x=>L.push(bullet(x)));else L.push("- Sem queixas no momento");
  L.push("");
 
  L.push("## ALEITAMENTO/ALIMENTAÇÃO:");
  const mi=idadeAv(),seis=(mi!=null&&mi>=6),ate6=(mi==null||mi<7);
- let leite=seis?[E.lm?"LEITE MATERNO":"",E.la?"LEITE ARTIFICIAL":""].filter(Boolean).join(" + "):E.aleit;
- if(leite&&leite.indexOf("LEITE ARTIFICIAL")>=0&&E.marca)leite+=" - "+E.marca;
+ let leite=seis?[E.lm?"Leite materno":"",E.la?"Leite artificial":""].filter(Boolean).join(" + "):E.aleit;
+ if(leite&&/artificial/i.test(leite)&&E.marca)leite+=" - "+E.marca;
  if(leite&&E.aleitObs)leite+=" - "+E.aleitObs;
  if(leite)L.push(leite);
  else if(E.aleitObs)L.push(E.aleitObs);
- if(ate6&&E.dific)L.push(E.dific==="SEM"?"SEM DIFICULDADES PARA AMAMENTAR"
-   :"COM DIFICULDADES PARA AMAMENTAR"+(E.dificTxt?" - "+E.dificTxt:""));
- if(E.parou)L.push("PAROU DE AMAMENTAR AOS "+(E.parouMes||"__")+" "+(E.parouUnid||"MESES")+" DE VIDA");
- if(E.parou&&E.parouMotivo)L.push("MOTIVO: "+E.parouMotivo);
- if(E.complementar)L.push("ALIMENTAÇÃO COMPLEMENTAR = "+E.complementar);
- if(E.frutas)L.push("FRUTAS "+E.frutas);
- if(E.indust)L.push("ALIMENTOS INDUSTRIALIZADOS = "+E.indust);
+ if(ate6&&E.dific)L.push(E.dific==="SEM"?"Sem dificuldades para amamentar"
+   :"Com dificuldades para amamentar"+(E.dificTxt?" - "+E.dificTxt:""));
+ if(E.parou)L.push("Parou de amamentar aos "+(E.parouMes||"__")+" "+(E.parouUnid||"meses")+" de vida");
+ if(E.parou&&E.parouMotivo)L.push("Motivo: "+E.parouMotivo);
+ if(E.complementar)L.push("Alimentação complementar = "+E.complementar);
+ if(E.frutas)L.push("Frutas "+E.frutas);
+ if(E.indust)L.push("Alimentos industrializados = "+E.indust);
  L.push("");
 
  const ca=CONJUNTO.filter(o=>E.conjuntos[o]),acx=linhas(E.acompTxt);
@@ -722,7 +726,7 @@ function gerarTexto(){
  }
 
  if(E.vacinas){L.push("## VACINAS");L.push(E.vacinas);
-  if(E.vacinas==="VACINAS EM ATRASO")linhas(E.vacAtraso).forEach(x=>L.push(bullet(x)));
+  if(E.vacinas==="Vacinas em atraso")linhas(E.vacAtraso).forEach(x=>L.push(bullet(x)));
   L.push("");}
 
  const md=MEDS.filter(k=>E.meds[k]),mx=linhas(E.medsTxt);
@@ -731,13 +735,15 @@ function gerarTexto(){
   mx.forEach(x=>L.push(bullet(x)));L.push("");}
 
  const lst=listaAlerta(m),comDet=x=>x+(E.alertaDet[x]?" - "+E.alertaDet[x]:"");
- const on=lst.filter(x=>E.alertas[x]==="PRESENTE").map(comDet)
+ /* os sinais entram no meio de uma frase, então começam em minúscula */
+ const minusc=s=>s.charAt(0).toLowerCase()+s.slice(1);
+ const on=lst.filter(x=>E.alertas[x]==="PRESENTE").map(x=>minusc(comDet(x)))
    .concat(linhas(E.alertaExtra).map(x=>x.replace(/^[-*]\s*/,"")));
- const off=lst.filter(x=>E.alertas[x]==="AUSENTE").map(comDet);
+ const off=lst.filter(x=>E.alertas[x]==="AUSENTE").map(x=>minusc(comDet(x)));
  if(on.length||off.length){
   L.push("## SINAIS DE ALERTA:");
-  if(off.length)L.push(rotAlerta(m)+", "+off.join(", ")+" OU OUTROS.");
-  if(on.length){if(off.length)L.push("");L.push("SINAIS DE ALERTA PRESENTES = "+on.join(", ")+".");}
+  if(off.length)L.push(rotAlerta(m)+", "+off.join(", ")+" ou outros.");
+  if(on.length){if(off.length)L.push("");L.push("Sinais de alerta presentes = "+on.join(", ")+".");}
   L.push("");
  }
  const hb=[];
@@ -753,21 +759,22 @@ function gerarTexto(){
  const f=faixaDe(idadeAv());
  if(E.marcosModo==="lista"&&f){
   const marcados=f.itens.filter(i=>E.marcos[i[0]]);
-  if(marcados.length){L.push("MARCOS DO DESENVOLVIMENTO:");
+  const rotM=v=>v==="SIM"?"sim":v==="NÃO"?"não":v;
+  if(marcados.length){L.push("Marcos do desenvolvimento:");
    f.itens.forEach(i=>{const v=E.marcos[i[0]];if(!v)return;
-    L.push((v==="NÃO"?"***** - ":"- ")+i[0]+" = "+v);});
+    L.push((v==="NÃO"?"***** - ":"- ")+i[0]+" = "+rotM(v));});
    const ant=faixaAnt(f);
-   if(ant)ant.itens.forEach(i=>{const v=E.marcos[i[0]];if(v==="NÃO")L.push("***** - "+i[0]+" (faixa anterior) = NÃO");});
-  }else L.push("MARCOS DO DESENVOLVIMENTO PRESENTES");
- }else L.push(cl.k==="adequado"||cl.k===""?"MARCOS DO DESENVOLVIMENTO PRESENTES":"MARCOS DO DESENVOLVIMENTO - VER OBSERVAÇÃO");
+   if(ant)ant.itens.forEach(i=>{const v=E.marcos[i[0]];if(v==="NÃO")L.push("***** - "+i[0]+" (faixa anterior) = não");});
+  }else L.push("Marcos do desenvolvimento presentes");
+ }else L.push(cl.k==="adequado"||cl.k===""?"Marcos do desenvolvimento presentes":"Marcos do desenvolvimento - ver observação");
  L.push.apply(L,linhas(E.marcosObs));
  if(E.mchat)L.push("M-CHAT = "+E.mchat);
  L.push("");
 
  L.push("A");
- L.push("PUERICULTURA");
+ L.push("Puericultura");
  const av=Object.keys(E.aval).filter(k=>E.aval[k]);
- if((cl.k==="alerta"||cl.k==="atraso")&&av.indexOf("ALERTA PARA O DESENVOLVIMENTO")<0)L.push(cl.rot);
+ if((cl.k==="alerta"||cl.k==="atraso")&&av.indexOf("Alerta para o desenvolvimento")<0)L.push(cl.rot);
  av.forEach(x=>L.push(x));
  L.push.apply(L,linhas(E.avalTxt));
  L.push("");
@@ -775,9 +782,9 @@ function gerarTexto(){
  L.push("P");
  Object.keys(E.plano).filter(k=>E.plano[k]).forEach(x=>L.push("- "+x));
  linhas(E.planoTxt).forEach(x=>L.push(bullet(x)));
- if(E.retorno)L.push("- RETORNO "+E.retorno);
- if(E.redeApoio)L.push("REDE DE APOIO "+E.redeApoio);
- if(E.anticoncep)L.push("ANTICONCEPCIONAL DA MÃE = "+E.anticoncep);
+ if(E.retorno)L.push("- Retorno "+E.retorno);
+ if(E.redeApoio)L.push("Rede de apoio "+E.redeApoio);
+ if(E.anticoncep)L.push("Anticoncepcional da mãe = "+E.anticoncep);
  L.push("");
  return L.join("\n");
 }
@@ -866,9 +873,9 @@ $("#btnNasc").addEventListener("click",function(){E.nascOn=!E.nascOn;
    render();}else gerar();});});
 const selAc=$("#acompRot");
 selAc.innerHTML=ACOMPS.map(a=>'<option'+(E.acompRot===a?" selected":"")+'>'+a+'</option>').join("");
-function toggleAcompOutro(){$("#acompOutro").style.display=E.acompRot==="OUTROS"?"":"none";}
+function toggleAcompOutro(){$("#acompOutro").style.display=E.acompRot==="Outros"?"":"none";}
 selAc.addEventListener("change",function(){E.acompRot=this.value;toggleAcompOutro();
- if(E.acompRot==="OUTROS")$("#acompOutro").focus();gerar();});
+ if(E.acompRot==="Outros")$("#acompOutro").focus();gerar();});
 toggleAcompOutro();
 $("#optCaixa").addEventListener("click",function(){E.caixaAlta=!E.caixaAlta;this.setAttribute("aria-pressed",E.caixaAlta);gerar();});
 $("#optAcento").addEventListener("click",function(){E.semAcento=!E.semAcento;this.setAttribute("aria-pressed",E.semAcento);gerar();});
