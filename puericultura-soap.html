@@ -316,7 +316,7 @@ function zerar(){E={sexo:E.sexo||"F",consulta:E.consulta||"2m",nome:"",dn:"",dc:
  acompRot:E.acompRot||"da mãe",acompOutro:"",acompNome:"",nascOn:false,nasc:{},
  aleit:"",lm:false,la:false,marca:"",aleitObs:"",dific:"",dificTxt:"",parou:false,parouMes:"",parouUnid:"MESES",parouMotivo:"",
  complementar:"",frutas:"",indust:"",conjuntos:{},conjuntoDet:{},acompTxt:"",
- vacinas:"",vacAtraso:"",meds:{},medsDet:{},medsTxt:"",queixas:"",hab:{},habTxt:"",
+ vacinas:"",vacAtraso:"",meds:{},medsDet:{},medsTxt:"",queixas:"",semQueixas:false,hab:{},habTxt:"",
  alertas:{},alertaDet:{},alertaExtra:"",
  peso:"",comp:"",pc:"",exame:"",exameEd:false,
  marcosModo:"resumo",marcos:{},marcosObs:"",mchat:"",fatores:{},pcZ:false,fenot:false,
@@ -542,7 +542,8 @@ function bAcomp(){
 
 function bQueixas(){
  let h='<p class="mini"><b>## QUEIXAS:</b> — uma por linha, com hífen</p>'+
-  '<div class="grade">'+ta("queixas","","- sem queixas no momento","codigo")+'</div>';
+  '<button class="tg verde cx" data-bool="semQueixas" aria-pressed="'+(E.semQueixas?"true":"false")+'"><span class="mark"></span>Sem queixas no momento</button>';
+ if(!E.semQueixas)h+='<div class="grade" style="margin-top:9px">'+ta("queixas","","- mãe refere choro excessivo à noite","codigo")+'</div>';
  return bloco("S","Queixas","",h);
 }
 function bVacinas(){
@@ -696,10 +697,12 @@ function gerarTexto(){
  L.push(tituloIdade());
  L.push("");
 
- L.push("## QUEIXAS:");
  const q=linhas(E.queixas);
- if(q.length)q.forEach(x=>L.push(bullet(x)));else L.push("- Sem queixas no momento");
- L.push("");
+ if(E.semQueixas||q.length){
+  L.push("## QUEIXAS:");
+  if(E.semQueixas)L.push("- Sem queixas no momento");else q.forEach(x=>L.push(bullet(x)));
+  L.push("");
+ }
 
  L.push("## ALEITAMENTO/ALIMENTAÇÃO:");
  const mi=idadeAv(),seis=(mi!=null&&mi>=6),ate6=(mi==null||mi<7);
