@@ -703,8 +703,9 @@ function gerarTexto(){
   if(on.length){if(off.length)L.push("");L.push("SINAIS DE ALERTA PRESENTES = "+on.join(", ")+".");}
   L.push("");
  }
- habVisiveis().forEach(h=>{const v=String(valPar("hab",h)).trim();if(v)L.push(h.frase?v:h.r+" = "+v);});
- L.push("");
+ const hb=[];
+ habVisiveis().forEach(h=>{const v=String(valPar("hab",h)).trim();if(v)hb.push(h.frase?v:h.r+" = "+v);});
+ if(hb.length){L.push("## HABITOS E CUIDADOS:");L.push.apply(L,hb);L.push("");}
 
  L.push("O");
  antropo().linhas.forEach(l=>L.push(linhaAntropoTexto(l)));
