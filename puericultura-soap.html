@@ -103,6 +103,17 @@ textarea.codigo{font-family:var(--mono);font-size:12.5px;line-height:1.5;min-hei
 .par input{flex:1;min-width:0;border:1px solid var(--linha2);border-radius:5px;padding:4px 8px;background:#FBFDFC}
 .par input:focus{border-color:var(--petroleo);background:#fff}
 .par input:placeholder-shown{background:#F4F7F6;color:var(--tinta3)}
+/* sinais de alerta: rótulo + presente/ausente + observação */
+.linha-alerta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:6px}
+.linha-alerta .rot-alerta{font-family:var(--ui);font-size:12px;letter-spacing:.04em;color:var(--tinta2);flex:0 0 210px}
+.linha-alerta .pil{padding:4px 11px;font-size:12.5px}
+.linha-alerta .pil[data-v="PRESENTE"][aria-pressed="true"]{background:var(--brasa);border-color:var(--brasa);color:#fff}
+.linha-alerta .pil[data-v="AUSENTE"][aria-pressed="true"]{background:var(--petroleo);border-color:var(--petroleo);color:#fff}
+@media(max-width:640px){.linha-alerta .rot-alerta{flex:1 0 100%}}
+
+/* sugestões de texto bem apagadas */
+input::placeholder,textarea::placeholder{color:#C9D4D8;opacity:1}
+input::-webkit-input-placeholder,textarea::-webkit-input-placeholder{color:#C9D4D8}
 
 /* antropometria */
 .antro{width:100%;border-collapse:collapse}
@@ -222,9 +233,9 @@ const FATORES=["Vulnerabilidade social","Reside em área de risco","Deficiência
 
 /* ===== SINAIS DE ALERTA — no seu texto ===== */
 const AL={
- neo:["COTO UMBILICAL INFECCIONADO","ICTERICIA","DIARREIA OU VOMITOS","DIFICULDADES PARA RESPIRAR","FEBRE","HIPOTERMIA","CONVULSOES OU MOVIMENTOS ANORMAIS","AUSCULTA CARDIACA ALTERADA OU CIANOSE"],
- lac:["SECREÇÃO NASAL","COLICAS OU ENGASGOS","DIARREIA OU CONSTIPAÇÃO","VOMITOS","DIFICULDADES PARA RESPIRAR","FEBRE","HIPOTERMIA","CONVULSÕES OU MOVIMENTOS ANORMAIS"],
- mai:["DIARREIA","VOMITOS","FEBRE","SIBILANCIAS","DIFICULDADES PARA RESPIRAR","CONVULSÕES OU TREMORES"]};
+ neo:["COTO UMBILICAL INFECCIONADO","ICTERICIA","DIARREIA","VOMITOS","DIFICULDADES PARA RESPIRAR","FEBRE","HIPOTERMIA","CONVULSOES","MOVIMENTOS ANORMAIS","AUSCULTA CARDIACA ALTERADA","CIANOSE"],
+ lac:["SECREÇÃO NASAL","COLICAS","ENGASGOS","DIARREIA","CONSTIPAÇÃO","VOMITOS","DIFICULDADES PARA RESPIRAR","FEBRE","HIPOTERMIA","CONVULSÕES","MOVIMENTOS ANORMAIS"],
+ mai:["DIARREIA","CONSTIPAÇÃO","VOMITOS","FEBRE","SIBILANCIAS","DIFICULDADES PARA RESPIRAR","CONVULSÕES","TREMORES"]};
 function grupoAlerta(m){return m<1?"neo":m<6?"lac":"mai";}
 function rotAlerta(m){return m<6?"SEM SINAIS DE ALERTA, TAIS COMO":"SEM SINAIS DE ALARME, TAIS COMO";}
 
@@ -263,9 +274,10 @@ const ACHADOS=["ABDOME COM PRESENÇA DE HERNIA UMBILICAL, SEM SINAIS FLOGISTICOS
 
 /* ===== CHIPS RÁPIDOS ===== */
 const MEDS=["VITAMINA D 200UI - 2 GOTAS 1 X AO DIA","VITAMINA A + D - 2 GOTAS 1 X AO DIA","SULFATO FERROSO - 1 GOTA POR QUILO/DIA","NENHUM"];
+const VAC=["VACINAS EM DIA","VACINAS EM ATRASO"];
 const ALEIT6=["ALEITAMENTO MATERNO EXCLUSIVO","ALEITAMENTO MATERNO + LEITE ARTIFICIAL","LEITE ARTIFICIAL"];
 const MARCAS=["NESTOGENO","APTAMIL","NAN","NINHO"];
-const CONJUNTO=["EM ACOMPANHAMENTO CONJUNTO NA U.M.I.","EM ACOMPANHAMENTO CONJUNTO COM PEDIATRIA","EM ACOMPANHAMENTO COM PEDIATRA PARTICULAR"];
+const CONJUNTO=["EM ACOMPANHAMENTO CONJUNTO NA U.M.I","EM ACOMPANHAMENTO CONJUNTO NO M.A.C.C.","EM ACOMPANHAMENTO CONJUNTO COM PEDIATRA PARTICULAR"];
 const UNID_PAROU=["DIAS","MESES","ANOS"];
 const PLANO=["DOU ORIENTAÇÕES","ORIENTO ESTIMULOS PARA IDADE","REFORÇO USO DE SUPLEMENTAÇÃO DE FERRO","REFORÇO USO DE VITAMINA D","ORIENTO ALIMENTAÇÃO COMPLEMENTAR SAUDAVEL","ORIENTO PREVENÇÃO DE ACIDENTES","ORIENTO HIGIENE BUCAL","SOLICITO EXAMES + RETORNO APOS EXAMES","ENCAMINHO A PEDIATRIA","ENCAMINHO A ODONTOLOGIA","ENCAMINHO A FONOAUDIOLOGIA","ENCAMINHO A OFTALMOLOGIA"];
 const AVAL=["ALERTA PARA O DESENVOLVIMENTO","ATRASO NA FALA","HERNIA UMBILICAL","DERMATITE DE FRALDAS","OBSTRUÇÃO DE CANAL LACRIMAL","REFLUXO GASTROESOFAGICO FISIOLOGICO","CONSTIPAÇÃO INTESTINAL","QUADRO GRIPAL","ANEMIA FERROPRIVA"];
@@ -286,7 +298,8 @@ function zerar(){E={sexo:E.sexo||"F",consulta:E.consulta||"2m",nome:"",dn:"",dc:
  acompRot:E.acompRot||"DA MÃE",acompOutro:"",acompNome:"",nascOn:false,nasc:{},
  aleit:"",lm:false,la:false,marca:"",aleitObs:"",dific:"",dificTxt:"",parou:false,parouMes:"",parouUnid:"MESES",parouMotivo:"",
  complementar:"",frutas:"",indust:"",conjuntos:{},conjuntoDet:{},acompTxt:"",
- vacinas:"DE ACORDO AO CALENDARIO",meds:{},medsTxt:"",queixas:"",hab:{},alertas:{},
+ vacinas:"VACINAS EM DIA",vacAtraso:"",meds:{},medsDet:{},medsTxt:"",queixas:"",hab:{},
+ alertas:{},alertaDet:{},alertaExtra:"",
  peso:"",comp:"",pc:"",exame:"",exameEd:false,
  marcosModo:"resumo",marcos:{},marcosObs:"",mchat:"",fatores:{},pcZ:false,fenot:false,
  aval:{},avalTxt:"",plano:{},planoTxt:"",retorno:"",redeApoio:"ADEQUADA",anticoncep:"",
@@ -500,18 +513,45 @@ function bQueixas(){
   '<div class="grade">'+ta("queixas","","- SEM QUEIXAS NO MOMENTO","codigo")+'</div>';
  return bloco("S","Queixas","",h);
 }
-function bVacMeds(){
- let h='<p class="mini"><b>## VACINAS</b></p><div class="grade">'+inp("vacinas","","DE ACORDO AO CALENDARIO",300)+'</div>';
- h+='<p class="mini" style="margin:13px 0 5px"><b>## MEDICAMENTOS EM USO</b></p>'+tgs("meds",MEDS,"verde")+
-  '<div class="grade" style="margin-top:8px">'+ta("medsTxt","","- OUTRO MEDICAMENTO - POSOLOGIA","codigo")+'</div>';
- return bloco("S","Vacinas e medicamentos","",h);
+function bVacinas(){
+ let h='<p class="mini"><b>## VACINAS</b></p>'+pils("vacinas",VAC);
+ if(E.vacinas==="VACINAS EM ATRASO")
+  h+='<div class="grade" style="margin-top:9px">'+ta("vacAtraso","Quais vacinas estão em atraso","- BCG\n- TRIPLICE VIRAL","codigo")+'</div>';
+ return bloco("S","Vacinas","",h);
+}
+
+function bMeds(){
+ let h='<p class="mini"><b>## MEDICAMENTOS EM USO</b></p>';
+ h+=MEDS.map(function(o,i){
+  const on=!!E.meds[o];
+  return '<div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:7px">'+
+   '<button class="tg verde" data-map="meds" data-key="'+esc(o)+'" aria-pressed="'+(on?"true":"false")+'"><span class="mark"></span>'+esc(o)+'</button>'+
+   (on?'<input data-par="medsDet" data-key="'+esc(o)+'" data-foco="medsDet'+i+'" value="'+esc(E.medsDet[o]||"")+
+     '" placeholder="INFORMAÇÕES ADICIONAIS" style="flex:1;min-width:220px;border:1px solid var(--linha);border-radius:var(--r);padding:5px 9px" autocomplete="off">':'')+
+   '</div>';
+ }).join("");
+ h+='<div class="grade" style="margin-top:8px">'+ta("medsTxt","Outros medicamentos","- OUTRO MEDICAMENTO - POSOLOGIA","codigo")+'</div>';
+ return bloco("S","Medicamentos em uso","",h);
 }
 
 function bAlerta(){
  const m=idadeAv()||0,lista=AL[grupoAlerta(m)];
- const n=Object.keys(E.alertas).filter(k=>E.alertas[k]).length;
- return bloco("S","Sinais de alerta",n?'<b style="color:var(--brasa)">'+n+' presente'+(n>1?"s":"")+'</b>':"nenhum — sai a sua frase padrão",
-  tgs("alertas",lista));
+ const n=lista.filter(x=>E.alertas[x]==="PRESENTE").length;
+ let h='<p class="mini"><b>## SINAIS DE ALERTA:</b> — só sai no texto o que for marcado</p>'+
+  '<div style="margin-bottom:10px"><button class="btn-mini" data-acao="todosAusentes">Todos ausentes</button> '+
+  '<button class="btn-mini" data-acao="limpaAlertas">Limpar</button></div>';
+ h+=lista.map(function(o,i){
+  const v=E.alertas[o]||"";
+  return '<div class="linha-alerta">'+
+   '<span class="rot-alerta">'+esc(o)+'</span>'+
+   '<div class="pilulas"><button class="pil" data-tri="alertas" data-key="'+esc(o)+'" data-v="PRESENTE" aria-pressed="'+(v==="PRESENTE"?"true":"false")+'">PRESENTE</button>'+
+   '<button class="pil" data-tri="alertas" data-key="'+esc(o)+'" data-v="AUSENTE" aria-pressed="'+(v==="AUSENTE"?"true":"false")+'">AUSENTE</button></div>'+
+   '<input data-par="alertaDet" data-key="'+esc(o)+'" data-foco="alertaDet'+i+'" value="'+esc(E.alertaDet[o]||"")+
+    '" placeholder="INFORMAÇÕES ADICIONAIS" style="flex:1;min-width:170px;border:1px solid var(--linha);border-radius:var(--r);padding:4px 9px" autocomplete="off">'+
+   '</div>';
+ }).join("");
+ h+='<div class="grade" style="margin-top:10px">'+ta("alertaExtra","Outros sinais de alerta presentes","- SINAL FORA DA LISTA","codigo")+'</div>';
+ return bloco("S","Sinais de alerta",n?'<b style="color:var(--brasa)">'+n+' presente'+(n>1?"s":"")+'</b>':"nenhum presente",h);
 }
 
 function bHabitos(){
@@ -634,7 +674,7 @@ function gerarTexto(){
  if(E.complementar)L.push("ALIMENTAÇÃO COMPLEMENTAR = "+E.complementar);
  if(E.frutas)L.push("FRUTAS "+E.frutas);
  if(E.indust)L.push("ALIMENTOS INDUSTRIALIZADOS = "+E.indust);
- L.push("","");
+ L.push("");
 
  const ca=CONJUNTO.filter(o=>E.conjuntos[o]),acx=linhas(E.acompTxt);
  if(ca.length||acx.length){
@@ -644,13 +684,25 @@ function gerarTexto(){
   L.push("");
  }
 
- if(E.vacinas){L.push("## VACINAS");L.push(bullet(E.vacinas));L.push("");}
- const md=Object.keys(E.meds).filter(k=>E.meds[k]),mx=linhas(E.medsTxt);
- if(md.length||mx.length){L.push("## MEDICAMENTOS EM USO");md.forEach(x=>L.push("- "+x));mx.forEach(x=>L.push(bullet(x)));L.push("");}
- const lst=AL[grupoAlerta(m)],on=lst.filter(x=>E.alertas[x]),off=lst.filter(x=>!E.alertas[x]);
- if(on.length)L.push("APRESENTA: "+on.join(", ")+".");
- if(off.length)L.push((on.length?"SEM OUTROS SINAIS DE ALERTA, TAIS COMO":rotAlerta(m))+": "+off.join(", ")+" OU OUTROS.");
- L.push("");
+ if(E.vacinas){L.push("## VACINAS");L.push(E.vacinas);
+  if(E.vacinas==="VACINAS EM ATRASO")linhas(E.vacAtraso).forEach(x=>L.push(bullet(x)));
+  L.push("");}
+
+ const md=MEDS.filter(k=>E.meds[k]),mx=linhas(E.medsTxt);
+ if(md.length||mx.length){L.push("## MEDICAMENTOS EM USO");
+  md.forEach(x=>L.push("- "+x+(E.medsDet[x]?" - "+E.medsDet[x]:"")));
+  mx.forEach(x=>L.push(bullet(x)));L.push("");}
+
+ const lst=AL[grupoAlerta(m)],comDet=x=>x+(E.alertaDet[x]?" - "+E.alertaDet[x]:"");
+ const on=lst.filter(x=>E.alertas[x]==="PRESENTE").map(comDet)
+   .concat(linhas(E.alertaExtra).map(x=>x.replace(/^[-*]\s*/,"")));
+ const off=lst.filter(x=>E.alertas[x]==="AUSENTE").map(comDet);
+ if(on.length||off.length){
+  L.push("## SINAIS DE ALERTA:");
+  if(off.length)L.push(rotAlerta(m)+", "+off.join(", ")+" OU OUTROS.");
+  if(on.length){if(off.length)L.push("");L.push("SINAIS DE ALERTA PRESENTES = "+on.join(", ")+".");}
+  L.push("");
+ }
  habVisiveis().forEach(h=>{const v=String(valPar("hab",h)).trim();if(v)L.push(h.frase?v:h.r+" = "+v);});
  L.push("");
 
@@ -703,7 +755,7 @@ function gerar(){
 function render(){
  const at=document.activeElement,fo=at&&at.dataset?at.dataset.foco:null,pos=at&&at.selectionStart!=null?at.selectionStart:null;
  nB=0;
- $("#form").innerHTML=bNasc()+bQueixas()+bAlim()+bAcomp()+bVacMeds()+bAlerta()+bHabitos()+bAntro()+bExame()+bDesenv()+bAval()+bPlano();
+ $("#form").innerHTML=bNasc()+bQueixas()+bAlim()+bAcomp()+bVacinas()+bMeds()+bAlerta()+bHabitos()+bAntro()+bExame()+bDesenv()+bAval()+bPlano();
  if(fo){const el=$('#form [data-foco="'+fo+'"]');if(el){el.focus();
   if(pos!=null&&el.setSelectionRange)try{el.setSelectionRange(pos,pos)}catch(e){}}}
  renderRegua();renderIdade();gerar();
@@ -732,6 +784,8 @@ function acao(a){
  if(a==="limpaMarcos")E.marcos={};
  if(a==="resetExame"){E.exame=exameBase(idadeAv()||0);E.exameEd=false;}
  if(a==="fecharNasc"){E.nascOn=false;$("#btnNasc").setAttribute("aria-pressed","false");}
+ if(a==="todosAusentes")AL[grupoAlerta(idadeAv()||0)].forEach(x=>{if(E.alertas[x]!=="PRESENTE")E.alertas[x]="AUSENTE";});
+ if(a==="limpaAlertas"){E.alertas={};E.alertaDet={};}
 }
 const F=$("#form");
 F.addEventListener("input",function(e){
@@ -746,6 +800,7 @@ F.addEventListener("click",function(e){
  else if(d.bool)E[d.bool]=!E[d.bool];
  else if(d.pil)E[d.pil]=(E[d.pil]===d.v?"":d.v);
  else if(d.pil2)E[d.pil2]=(E[d.pil2]===d.v?"":d.v);
+ else if(d.tri)E[d.tri][d.key]=(E[d.tri][d.key]===d.v?"":d.v);
  else if(d.marco)E.marcos[d.marco]=(E.marcos[d.marco]===d.v?"":d.v);
  else if(d.add){E[d.add]=(E[d.add]?E[d.add].replace(/\n*$/,"")+"\n":"")+d.v;E.exameEd=true;}
  else if(d.acao)acao(d.acao);
