@@ -175,7 +175,7 @@ textarea.codigo{font-family:var(--mono);font-size:12.5px;line-height:1.5;min-hei
     <input id="ig" type="number" min="20" max="42" style="width:70px" placeholder="39"> <span style="color:var(--tinta3)">sem</span>
     <input id="igd" type="number" min="0" max="6" style="width:58px" placeholder="0"> <span style="color:var(--tinta3)">d</span></div></div>
   <div class="campo"><label for="acompRot">Acompanhante</label><div style="display:flex;gap:5px">
-    <select id="acompRot" style="width:214px"></select><input id="acompNome" style="width:150px" placeholder="nome" autocomplete="off"></div></div>
+    <select id="acompRot" style="width:214px"></select><input id="acompOutro" style="width:150px;display:none" placeholder="qual" autocomplete="off"><input id="acompNome" style="width:150px" placeholder="nome" autocomplete="off"></div></div>
   <div class="idade-chip" id="chipIdade"><b>—</b> <i>informe a data de nascimento</i></div>
 </div>
 <div class="regua-caixa"><div class="regua" id="regua"></div></div>
@@ -269,7 +269,7 @@ const CONJUNTO=["EM ACOMPANHAMENTO CONJUNTO NA U.M.I.","EM ACOMPANHAMENTO CONJUN
 const UNID_PAROU=["DIAS","MESES","ANOS"];
 const PLANO=["DOU ORIENTAÇÕES","ORIENTO ESTIMULOS PARA IDADE","REFORÇO USO DE SUPLEMENTAÇÃO DE FERRO","REFORÇO USO DE VITAMINA D","ORIENTO ALIMENTAÇÃO COMPLEMENTAR SAUDAVEL","ORIENTO PREVENÇÃO DE ACIDENTES","ORIENTO HIGIENE BUCAL","SOLICITO EXAMES + RETORNO APOS EXAMES","ENCAMINHO A PEDIATRIA","ENCAMINHO A ODONTOLOGIA","ENCAMINHO A FONOAUDIOLOGIA","ENCAMINHO A OFTALMOLOGIA"];
 const AVAL=["ALERTA PARA O DESENVOLVIMENTO","ATRASO NA FALA","HERNIA UMBILICAL","DERMATITE DE FRALDAS","OBSTRUÇÃO DE CANAL LACRIMAL","REFLUXO GASTROESOFAGICO FISIOLOGICO","CONSTIPAÇÃO INTESTINAL","QUADRO GRIPAL","ANEMIA FERROPRIVA"];
-const ACOMPS=["DA MÃE","DO PAI","DOS PAIS","DA AVÓ MATERNA","DA AVÓ PATERNA","DA TIA","DO RESPONSÁVEL","—"];
+const ACOMPS=["DA MÃE","DO PAI","DOS PAIS","DA AVÓ MATERNA","DA AVÓ PATERNA","DA TIA","DO RESPONSÁVEL","OUTROS","—"];
 
 /* ===== CONSULTAS ===== */
 const CONSULTAS=[{id:"1sem",rot:"1ª sem",m:0.25,cor:"--f-neo"},{id:"1m",rot:"1 mês",m:1,cor:"--f-neo"},
@@ -283,9 +283,9 @@ const RETORNOS={"1sem":"AOS 30 DIAS DE VIDA","1m":"AOS 2 MESES DE VIDA","2m":"AO
 const hoje=new Date().toISOString().slice(0,10);
 let E={};
 function zerar(){E={sexo:E.sexo||"F",consulta:E.consulta||"2m",nome:"",dn:"",dc:hoje,ig:"",igd:"",
- acompRot:E.acompRot||"DA MÃE",acompNome:"",nascOn:false,nasc:{},
+ acompRot:E.acompRot||"DA MÃE",acompOutro:"",acompNome:"",nascOn:false,nasc:{},
  aleit:"",lm:false,la:false,marca:"",aleitObs:"",dific:"",dificTxt:"",parou:false,parouMes:"",parouUnid:"MESES",parouMotivo:"",
- complementar:"",frutas:"",indust:"",conjunto:"",
+ complementar:"",frutas:"",indust:"",conjuntos:{},conjuntoDet:{},acompTxt:"",
  vacinas:"DE ACORDO AO CALENDARIO",meds:{},medsTxt:"",queixas:"",hab:{},alertas:{},
  peso:"",comp:"",pc:"",exame:"",exameEd:false,
  marcosModo:"resumo",marcos:{},marcosObs:"",mchat:"",fatores:{},pcZ:false,fenot:false,
@@ -474,14 +474,25 @@ function bAlim(){
   '<button class="tg" data-bool="parou" aria-pressed="'+(E.parou?"true":"false")+'"><span class="mark"></span>PAROU DE AMAMENTAR AOS</button>'+
   '<input data-in="parouMes" data-foco="parouMes" value="'+esc(E.parouMes)+'" placeholder="X" style="width:64px;border:1px solid var(--linha);border-radius:var(--r);padding:5px 9px" autocomplete="off">'+
   '<div class="pilulas">'+UNID_PAROU.map(u=>'<button class="pil" data-pil="parouUnid" data-v="'+u+'" aria-pressed="'+(E.parouUnid===u?"true":"false")+'">'+u+'</button>').join("")+'</div></div>';
- if(E.parou)h+='<div class="grade" style="margin-top:9px">'+inp("parouMotivo","Motivo do desmame","RETORNO AO TRABALHO",280)+'</div>';
+ if(E.parou)h+='<div class="grade" style="margin-top:9px">'+inp("parouMotivo","Motivo","RETORNO AO TRABALHO",280)+'</div>';
  if(m==null||m>=4)h+='<div class="grade" style="margin-top:12px">'+ta("complementar","Alimentação complementar","COME DE TUDO - FRUTAS, ARROZ, FEIJÃO, LEGUMES, VERDURA, CARNE, OVOS")+'</div>'+
    '<div class="grade" style="margin-top:9px">'+inp("frutas","Frutas por dia","2 A 3 X POR DIA",170)+inp("indust","Alimentos industrializados","NÃO",200)+'</div>';
  return bloco("S","Aleitamento e alimentação","",h);
 }
 
 function bAcomp(){
- return bloco("S","Acompanhamento","",pils("conjunto",CONJUNTO));
+ let h='<p class="mini"><b>## ACOMPANHAMENTOS:</b> — pode marcar mais de um</p>';
+ h+=CONJUNTO.map(function(o,i){
+  const on=!!E.conjuntos[o];
+  return '<div style="display:flex;gap:9px;align-items:flex-start;flex-wrap:wrap;margin-bottom:7px">'+
+   '<button class="tg verde" data-map="conjuntos" data-key="'+esc(o)+'" aria-pressed="'+(on?"true":"false")+'"><span class="mark"></span>'+esc(o)+'</button>'+
+   (on?'<textarea data-par="conjuntoDet" data-key="'+esc(o)+'" data-foco="conjDet'+i+'" class="codigo" '+
+     'placeholder="- SOLICITADO EXAMES&#10;- ENCAMINHADO A NEUROLOGIA" '+
+     'style="flex:1;min-width:250px;min-height:38px">'+esc(E.conjuntoDet[o]||"")+'</textarea>':'')+
+   '</div>';
+ }).join("");
+ h+='<div class="grade" style="margin-top:10px">'+ta("acompTxt","Outras informações","- RETORNO AGENDADO PARA 28/08/2026","codigo")+'</div>';
+ return bloco("S","Acompanhamento","",h);
 }
 
 function bQueixas(){
@@ -597,7 +608,8 @@ function gerarTexto(){
    if(t.length){L.push("TRIAGENS NEONATAIS");L.push.apply(L,t);}
    L.push.apply(L,linhas(E.nascObs));L.push("");}
  }
- const ac=(E.acompRot&&E.acompRot!=="—")?(E.sexo==="F"?"ACOMPANHADA ":"ACOMPANHADO ")+E.acompRot+(E.acompNome?", "+E.acompNome:""):"";
+ const rotAc=E.acompRot==="OUTROS"?E.acompOutro:E.acompRot;
+ const ac=(rotAc&&E.acompRot!=="—")?(E.sexo==="F"?"ACOMPANHADA ":"ACOMPANHADO ")+rotAc+(E.acompNome?", "+E.acompNome:""):"";
  if(ac){L.push(ac);L.push("");}
 
  L.push("S");
@@ -617,14 +629,20 @@ function gerarTexto(){
  if(leite)L.push(leite);
  if(ate6&&E.dific)L.push(E.dific==="SEM"?"SEM DIFICULDADES PARA AMAMENTAR"
    :"COM DIFICULDADES PARA AMAMENTAR"+(E.dificTxt?" - "+E.dificTxt:""));
- if(E.parou)L.push("PAROU DE AMAMENTAR AOS "+(E.parouMes||"__")+" "+(E.parouUnid||"MESES"));
- if(E.parou&&E.parouMotivo)L.push("MOTIVO DO DESMAME: "+E.parouMotivo);
+ if(E.parou)L.push("PAROU DE AMAMENTAR AOS "+(E.parouMes||"__")+" "+(E.parouUnid||"MESES")+" DE VIDA");
+ if(E.parou&&E.parouMotivo)L.push("MOTIVO: "+E.parouMotivo);
  if(E.complementar)L.push("ALIMENTAÇÃO COMPLEMENTAR = "+E.complementar);
  if(E.frutas)L.push("FRUTAS "+E.frutas);
  if(E.indust)L.push("ALIMENTOS INDUSTRIALIZADOS = "+E.indust);
  L.push("","");
 
- if(E.conjunto){L.push(E.conjunto);L.push("");}
+ const ca=CONJUNTO.filter(o=>E.conjuntos[o]),acx=linhas(E.acompTxt);
+ if(ca.length||acx.length){
+  L.push("## ACOMPANHAMENTOS:");
+  ca.forEach(o=>{L.push(o);linhas(E.conjuntoDet[o]).forEach(x=>L.push(bullet(x)));});
+  acx.forEach(x=>L.push(x));
+  L.push("");
+ }
 
  if(E.vacinas){L.push("## VACINAS");L.push(bullet(E.vacinas));L.push("");}
  const md=Object.keys(E.meds).filter(k=>E.meds[k]),mx=linhas(E.medsTxt);
@@ -744,7 +762,7 @@ $("#sexo").addEventListener("click",function(e){
  [].forEach.call(this.querySelectorAll("button"),x=>x.setAttribute("aria-pressed",x===b?"true":"false"));render();});
 $("#btnNasc").addEventListener("click",function(){E.nascOn=!E.nascOn;
  this.setAttribute("aria-pressed",E.nascOn);render();});
-["nome","dn","dc","ig","igd","acompNome"].forEach(function(k){
+["nome","dn","dc","ig","igd","acompNome","acompOutro"].forEach(function(k){
  const el=document.getElementById(k);el.value=E[k]||"";
  el.addEventListener("input",function(){E[k]=el.value;
   if(k==="dn"||k==="dc"||k==="ig"||k==="igd"){const s=sugerirConsulta();
@@ -753,13 +771,16 @@ $("#btnNasc").addEventListener("click",function(){E.nascOn=!E.nascOn;
    render();}else gerar();});});
 const selAc=$("#acompRot");
 selAc.innerHTML=ACOMPS.map(a=>'<option'+(E.acompRot===a?" selected":"")+'>'+a+'</option>').join("");
-selAc.addEventListener("change",function(){E.acompRot=this.value;gerar();});
+function toggleAcompOutro(){$("#acompOutro").style.display=E.acompRot==="OUTROS"?"":"none";}
+selAc.addEventListener("change",function(){E.acompRot=this.value;toggleAcompOutro();
+ if(E.acompRot==="OUTROS")$("#acompOutro").focus();gerar();});
+toggleAcompOutro();
 $("#optCaixa").addEventListener("click",function(){E.caixaAlta=!E.caixaAlta;this.setAttribute("aria-pressed",E.caixaAlta);gerar();});
 $("#optAcento").addEventListener("click",function(){E.semAcento=!E.semAcento;this.setAttribute("aria-pressed",E.semAcento);gerar();});
 $("#btnLimpar").addEventListener("click",function(){
  if(!confirm("Apagar todos os dados desta consulta?"))return;zerar();
- ["nome","dn","dc","ig","igd","acompNome"].forEach(k=>{document.getElementById(k).value=E[k]||"";});
- document.getElementById("dc").value=E.dc;$("#btnNasc").setAttribute("aria-pressed","false");render();});
+ ["nome","dn","dc","ig","igd","acompNome","acompOutro"].forEach(k=>{document.getElementById(k).value=E[k]||"";});
+ document.getElementById("dc").value=E.dc;$("#btnNasc").setAttribute("aria-pressed","false");toggleAcompOutro();render();});
 function copiar(){
  const txt=$("#saida").textContent,b=$("#btnCopiar");
  const ok=()=>{b.classList.add("feito");b.textContent="Copiado";
