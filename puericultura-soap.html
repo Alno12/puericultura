@@ -243,14 +243,14 @@ function rotAlerta(m){return m<6?"SEM SINAIS DE ALERTA, TAIS COMO":"SEM SINAIS D
 /* "Atenção e cuidados especiais nesta fase" — Caderneta da Criança, 2ª ed.
    1º mês (pág. 69) · 2º mês (pág. 70) · 4º mês (pág. 71) · 6º ao 36º mês (pág. 72 a 74) */
 const HABITOS=[
+ /* antes de 1 mês */
+ {k:"localSono",r:"LOCAL QUE DORME",v:"BERÇO",ate:1},
  /* 1º e 2º mês */
- {k:"sono",r:"TEMPO DE SONO EM 24 HORAS",v:"ADEQUADO",ate:4},
+ {k:"sono",r:"TEMPO DE SONO EM 24 HORAS",v:"ADEQUADO",de:1,ate:4},
  {k:"posSono",r:"POSIÇÃO NO SONO",v:"BARRIGA PARA CIMA",ate:4},
  {k:"trocaPos",r:"TROCA DE POSIÇÃO DURANTE O DIA",v:"SIM",de:2,ate:4},
- {k:"intestinal",r:"FUNCIONAMENTO DO INTESTINO E CÓLICAS",v:"NORMAL, SEM CÓLICAS",ate:4},
- /* 4º mês */
- {k:"intestinal",r:"FUNCIONAMENTO DO INTESTINO",v:"NORMAL",de:4,ate:6},
- /* 1º ao 4º mês */
+ /* até o 4º mês */
+ {k:"intestinal",r:"HABITO INTESTINAL",v:"DIARIO",ate:6},
  {k:"higiene",r:"HIGIENE E CUIDADOS GERAIS",v:"ADEQUADOS",ate:6},
  {k:"bucal",r:"ORIENTAÇÕES SOBRE SAÚDE BUCAL",v:"ORIENTADO",de:2,ate:6},
  {k:"sf",r:"USO DE SORO FISIOLÓGICO NASAL",v:"NÃO - ORIENTO",de:2,ate:6},
@@ -260,7 +260,10 @@ const HABITOS=[
  {k:"odonto",r:"ACOMPANHAMENTO ODONTOLOGICO",v:"SIM",de:6},
  /* todas as fases */
  {k:"acidentes",r:"ACIDENTES DOMESTICOS",v:"NEGA"},
- {k:"violencia",r:"SINAIS DE VIOLENCIAS/NEGLIGENCIAS",v:"NÃO"}];
+ {k:"violencia",r:"SINAIS DE VIOLENCIAS/NEGLIGENCIAS",v:"NÃO"},
+ /* a partir de 1 mês */
+ {k:"lacos",r:"LAÇOS DE AFETO",v:"OK",de:1},
+ {k:"interacao",r:"INTERAÇÃO MÃE-FILHO",v:"ADEQUADO",de:1}];
 
 /* ===== EXAME FÍSICO PADRÃO, POR IDADE ===== */
 function exameBase(m){
@@ -560,7 +563,7 @@ function bAlerta(){
 
 function faseCuidados(m){
  if(m==null)return"";
- return m<2?"1º mês":m<4?"2º mês":m<6?"4º mês":"6º mês em diante";
+ return m<1?"1ª semana":m<2?"1º mês":m<4?"2º mês":m<6?"4º mês":"6º mês em diante";
 }
 function bHabitos(){
  const m=idadeAv();
