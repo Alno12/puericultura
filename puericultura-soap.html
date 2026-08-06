@@ -232,11 +232,18 @@ const MARCOS=[
 const FATORES=["Vulnerabilidade social","Reside em área de risco","Deficiência","Peso ao nascer < 2.500 g","Nasceu com < 37 semanas","Asfixia grave / Apgar < 7 no 5º min","Mãe adolescente","Mãe usuária de álcool ou drogas","Mãe com depressão"];
 
 /* ===== SINAIS DE ALERTA — no seu texto ===== */
+/* fichas de consulta da Caderneta da Criança, 2ª ed.:
+   1ª semana (pág. 68) · 1º mês (pág. 69) · 2º mês (pág. 70) · 4º mês (pág. 71) · 6º ao 36º mês (pág. 72 a 74) */
+const AL_LAC=["SECREÇÃO NASAL","COLICAS","ENGASGOS","DIARREIA","CONSTIPAÇÃO","VOMITOS","GOLFADAS","DIFICULDADES PARA RESPIRAR","FEBRE","HIPOTERMIA","CONVULSÕES","MOVIMENTOS ANORMAIS"];
 const AL={
- neo:["COTO UMBILICAL INFECCIONADO","ICTERICIA","DIARREIA","VOMITOS","DIFICULDADES PARA RESPIRAR","FEBRE","HIPOTERMIA","CONVULSOES","MOVIMENTOS ANORMAIS","AUSCULTA CARDIACA ALTERADA","CIANOSE"],
- lac:["SECREÇÃO NASAL","COLICAS","ENGASGOS","DIARREIA","CONSTIPAÇÃO","VOMITOS","DIFICULDADES PARA RESPIRAR","FEBRE","HIPOTERMIA","CONVULSÕES","MOVIMENTOS ANORMAIS"],
- mai:["DIARREIA","CONSTIPAÇÃO","VOMITOS","FEBRE","SIBILANCIAS","DIFICULDADES PARA RESPIRAR","CONVULSÕES","TREMORES"]};
-function grupoAlerta(m){return m<1?"neo":m<6?"lac":"mai";}
+ sem1:["COTO UMBILICAL INFECCIONADO","ICTERICIA","DIARREIA","VOMITOS","DIFICULDADES PARA RESPIRAR","FEBRE","HIPOTERMIA","CONVULSÕES","MOVIMENTOS ANORMAIS","AUSCULTA CARDIACA ALTERADA","CIANOSE"],
+ m1:AL_LAC,
+ m2:AL_LAC.concat(["CRIPTORQUIDIA"]),
+ m4:AL_LAC.concat(["HERNIA INGUINAL/UMBILICAL"]),
+ m6:["DIARREIA","VOMITOS","FEBRE","SIBILANCIAS","DIFICULDADES PARA RESPIRAR","CONVULSÕES","TREMORES"]};
+function grupoAlerta(m){return m<1?"sem1":m<2?"m1":m<4?"m2":m<6?"m4":"m6";}
+/* criptorquidia só se aplica a meninos */
+function listaAlerta(m){return AL[grupoAlerta(m)].filter(x=>x!=="CRIPTORQUIDIA"||E.sexo==="M");}
 function rotAlerta(m){return m<6?"SEM SINAIS DE ALERTA, TAIS COMO":"SEM SINAIS DE ALARME, TAIS COMO";}
 
 /* ===== LINHAS "CHAVE = VALOR" DO S ===== */
@@ -305,7 +312,7 @@ function zerar(){E={sexo:E.sexo||"F",consulta:E.consulta||"2m",nome:"",dn:"",dc:
  acompRot:E.acompRot||"DA MÃE",acompOutro:"",acompNome:"",nascOn:false,nasc:{},
  aleit:"",lm:false,la:false,marca:"",aleitObs:"",dific:"",dificTxt:"",parou:false,parouMes:"",parouUnid:"MESES",parouMotivo:"",
  complementar:"",frutas:"",indust:"",conjuntos:{},conjuntoDet:{},acompTxt:"",
- vacinas:"VACINAS EM DIA",vacAtraso:"",meds:{},medsDet:{},medsTxt:"",queixas:"",hab:{},habTxt:"",
+ vacinas:"",vacAtraso:"",meds:{},medsDet:{},medsTxt:"",queixas:"",hab:{},habTxt:"",
  alertas:{},alertaDet:{},alertaExtra:"",
  peso:"",comp:"",pc:"",exame:"",exameEd:false,
  marcosModo:"resumo",marcos:{},marcosObs:"",mchat:"",fatores:{},pcZ:false,fenot:false,
@@ -464,6 +471,20 @@ function bNasc(){if(!E.nascOn)return"";
   pares("nasc",NASC)+'<p class="mini" style="margin:12px 0 6px"><b>TRIAGENS NEONATAIS</b></p>'+pares("nasc",TRIAG)+
   '<div class="grade" style="margin-top:10px">'+ta("nascObs","Observações do nascimento / alta","EXAME FISICO DO RN NORMAL. FRENECTOMIA. OROLANI NEGATIVO.")+'</div>',"--f-neo");}
 
+/* mantém o aleitamento ao cruzar os 6 meses: até lá é uma pílula (aleit),
+   a partir daí são dois botões (lm/la) — converte de um formato para o outro */
+function normalizaAleit(){
+ const m=idadeAv(),seis=(m!=null&&m>=6);
+ if(seis&&E.aleit){
+  if(E.aleit.indexOf("MATERNO")>=0)E.lm=true;
+  if(E.aleit.indexOf("ARTIFICIAL")>=0)E.la=true;
+  E.aleit="";
+ }else if(!seis&&(E.lm||E.la)){
+  E.aleit=(E.lm&&E.la)?"ALEITAMENTO MATERNO + LEITE ARTIFICIAL":E.lm?"ALEITAMENTO MATERNO EXCLUSIVO":"LEITE ARTIFICIAL";
+  E.lm=false;E.la=false;
+ }
+}
+
 function bAlim(){
  const m=idadeAv(),ate6=(m==null||m<7);      // dificuldade para amamentar: até a consulta de 6 meses
  const seis=(m!=null&&m>=6);
@@ -542,7 +563,7 @@ function bMeds(){
 }
 
 function bAlerta(){
- const m=idadeAv()||0,lista=AL[grupoAlerta(m)];
+ const m=idadeAv()||0,lista=listaAlerta(m);
  const n=lista.filter(x=>E.alertas[x]==="PRESENTE").length;
  let h='<p class="mini"><b>## SINAIS DE ALERTA:</b> — só sai no texto o que for marcado</p>'+
   '<div style="margin-bottom:10px"><button class="btn-mini" data-acao="todosAusentes">Todos ausentes</button> '+
@@ -682,6 +703,7 @@ function gerarTexto(){
  if(leite&&leite.indexOf("LEITE ARTIFICIAL")>=0&&E.marca)leite+=" - "+E.marca;
  if(leite&&E.aleitObs)leite+=" - "+E.aleitObs;
  if(leite)L.push(leite);
+ else if(E.aleitObs)L.push(E.aleitObs);
  if(ate6&&E.dific)L.push(E.dific==="SEM"?"SEM DIFICULDADES PARA AMAMENTAR"
    :"COM DIFICULDADES PARA AMAMENTAR"+(E.dificTxt?" - "+E.dificTxt:""));
  if(E.parou)L.push("PAROU DE AMAMENTAR AOS "+(E.parouMes||"__")+" "+(E.parouUnid||"MESES")+" DE VIDA");
@@ -708,7 +730,7 @@ function gerarTexto(){
   md.forEach(x=>L.push("- "+x+(E.medsDet[x]?" - "+E.medsDet[x]:"")));
   mx.forEach(x=>L.push(bullet(x)));L.push("");}
 
- const lst=AL[grupoAlerta(m)],comDet=x=>x+(E.alertaDet[x]?" - "+E.alertaDet[x]:"");
+ const lst=listaAlerta(m),comDet=x=>x+(E.alertaDet[x]?" - "+E.alertaDet[x]:"");
  const on=lst.filter(x=>E.alertas[x]==="PRESENTE").map(comDet)
    .concat(linhas(E.alertaExtra).map(x=>x.replace(/^[-*]\s*/,"")));
  const off=lst.filter(x=>E.alertas[x]==="AUSENTE").map(comDet);
@@ -771,6 +793,7 @@ function gerar(){
 /* ===== RENDER ===== */
 function render(){
  const at=document.activeElement,fo=at&&at.dataset?at.dataset.foco:null,pos=at&&at.selectionStart!=null?at.selectionStart:null;
+ normalizaAleit();
  nB=0;
  $("#form").innerHTML=bNasc()+bQueixas()+bAlim()+bAcomp()+bVacinas()+bMeds()+bAlerta()+bHabitos()+bAntro()+bExame()+bDesenv()+bAval()+bPlano();
  if(fo){const el=$('#form [data-foco="'+fo+'"]');if(el){el.focus();
@@ -801,7 +824,7 @@ function acao(a){
  if(a==="limpaMarcos")E.marcos={};
  if(a==="resetExame"){E.exame=exameBase(idadeAv()||0);E.exameEd=false;}
  if(a==="fecharNasc"){E.nascOn=false;$("#btnNasc").setAttribute("aria-pressed","false");}
- if(a==="todosAusentes")AL[grupoAlerta(idadeAv()||0)].forEach(x=>{if(E.alertas[x]!=="PRESENTE")E.alertas[x]="AUSENTE";});
+ if(a==="todosAusentes")listaAlerta(idadeAv()||0).forEach(x=>{if(E.alertas[x]!=="PRESENTE")E.alertas[x]="AUSENTE";});
  if(a==="limpaAlertas"){E.alertas={};E.alertaDet={};}
 }
 const F=$("#form");
