@@ -537,7 +537,9 @@ function bMeds(){
 function bAlerta(){
  const m=idadeAv()||0,lista=AL[grupoAlerta(m)];
  const n=lista.filter(x=>E.alertas[x]==="PRESENTE").length;
- let h='<p class="mini"><b>## SINAIS DE ALERTA:</b> — não marcado conta como ausente</p>';
+ let h='<p class="mini"><b>## SINAIS DE ALERTA:</b> — só sai no texto o que for marcado</p>'+
+  '<div style="margin-bottom:10px"><button class="btn-mini" data-acao="todosAusentes">Todos ausentes</button> '+
+  '<button class="btn-mini" data-acao="limpaAlertas">Limpar</button></div>';
  h+=lista.map(function(o,i){
   const v=E.alertas[o]||"";
   return '<div class="linha-alerta">'+
@@ -694,11 +696,13 @@ function gerarTexto(){
  const lst=AL[grupoAlerta(m)],comDet=x=>x+(E.alertaDet[x]?" - "+E.alertaDet[x]:"");
  const on=lst.filter(x=>E.alertas[x]==="PRESENTE").map(comDet)
    .concat(linhas(E.alertaExtra).map(x=>x.replace(/^[-*]\s*/,"")));
- const off=lst.filter(x=>E.alertas[x]!=="PRESENTE").map(comDet);
- L.push("## SINAIS DE ALERTA:");
- if(off.length)L.push(rotAlerta(m)+", "+off.join(", ")+" OU OUTROS.");
- if(on.length){if(off.length)L.push("");L.push("SINAIS DE ALERTA PRESENTES = "+on.join(", ")+".");}
- L.push("");
+ const off=lst.filter(x=>E.alertas[x]==="AUSENTE").map(comDet);
+ if(on.length||off.length){
+  L.push("## SINAIS DE ALERTA:");
+  if(off.length)L.push(rotAlerta(m)+", "+off.join(", ")+" OU OUTROS.");
+  if(on.length){if(off.length)L.push("");L.push("SINAIS DE ALERTA PRESENTES = "+on.join(", ")+".");}
+  L.push("");
+ }
  habVisiveis().forEach(h=>{const v=String(valPar("hab",h)).trim();if(v)L.push(h.frase?v:h.r+" = "+v);});
  L.push("");
 
@@ -780,6 +784,8 @@ function acao(a){
  if(a==="limpaMarcos")E.marcos={};
  if(a==="resetExame"){E.exame=exameBase(idadeAv()||0);E.exameEd=false;}
  if(a==="fecharNasc"){E.nascOn=false;$("#btnNasc").setAttribute("aria-pressed","false");}
+ if(a==="todosAusentes")AL[grupoAlerta(idadeAv()||0)].forEach(x=>{if(E.alertas[x]!=="PRESENTE")E.alertas[x]="AUSENTE";});
+ if(a==="limpaAlertas"){E.alertas={};E.alertaDet={};}
 }
 const F=$("#form");
 F.addEventListener("input",function(e){
