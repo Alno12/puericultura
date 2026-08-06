@@ -240,23 +240,27 @@ function grupoAlerta(m){return m<1?"neo":m<6?"lac":"mai";}
 function rotAlerta(m){return m<6?"SEM SINAIS DE ALERTA, TAIS COMO":"SEM SINAIS DE ALARME, TAIS COMO";}
 
 /* ===== LINHAS "CHAVE = VALOR" DO S ===== */
+/* "Atenção e cuidados especiais nesta fase" — Caderneta da Criança, 2ª ed.
+   1º mês (pág. 69) · 2º mês (pág. 70) · 4º mês (pág. 71) · 6º ao 36º mês (pág. 72 a 74) */
 const HABITOS=[
- {k:"intestinal",r:"HABITO INTESTINAL",v:"DIARIO"},
- {k:"diurese",r:"DIURESE",v:"NORMAL"},
- {k:"sono",r:"TEMPO DE SONO",v:"ADEQUADO"},
- {k:"posSono",r:"POSIÇÃO DE SONO",v:"BARRIGA PRA CIMA",ate:12},
- {k:"localSono",r:"LOCAL QUE DORME",v:"BERÇO"},
- {k:"fraldas",r:"TROCA DE FRALDAS POR DIA",v:"6 - 8",ate:8},
- {k:"colicas",r:"CÓLICAS",v:"NÃO TEM TIDO CÓLICAS",ate:12,frase:true},
- {k:"trocaPos",r:"TROCA DE POSIÇÃO NO DIA",v:"SIM",ate:12},
- {k:"sf",r:"USO DE SF DE ROTINA",v:"NÃO - ORIENTO"},
- {k:"bicos",r:"USO DE BICOS",v:"NÃO"},
- {k:"higiene",r:"HIGIENE E CUIDADOS GERAIS",v:"ADEQUADOS"},
+ /* 1º e 2º mês */
+ {k:"sono",r:"TEMPO DE SONO EM 24 HORAS",v:"ADEQUADO",ate:4},
+ {k:"posSono",r:"POSIÇÃO NO SONO",v:"BARRIGA PARA CIMA",ate:4},
+ {k:"trocaPos",r:"TROCA DE POSIÇÃO DURANTE O DIA",v:"SIM",de:2,ate:4},
+ {k:"intestinal",r:"FUNCIONAMENTO DO INTESTINO E CÓLICAS",v:"NORMAL, SEM CÓLICAS",ate:4},
+ /* 4º mês */
+ {k:"intestinal",r:"FUNCIONAMENTO DO INTESTINO",v:"NORMAL",de:4,ate:6},
+ /* 1º ao 4º mês */
+ {k:"higiene",r:"HIGIENE E CUIDADOS GERAIS",v:"ADEQUADOS",ate:6},
+ {k:"bucal",r:"ORIENTAÇÕES SOBRE SAÚDE BUCAL",v:"ORIENTADO",de:2,ate:6},
+ {k:"sf",r:"USO DE SORO FISIOLÓGICO NASAL",v:"NÃO - ORIENTO",de:2,ate:6},
+ /* 6º mês em diante */
+ {k:"supFe",r:"SUPLEMENTAÇÃO DE FE/MICRONUTRIENTES",v:"SIM",de:6},
+ {k:"supVitA",r:"SUPLEMENTAÇÃO DE VITAMINA A",v:"SIM",de:6},
+ {k:"odonto",r:"ACOMPANHAMENTO ODONTOLOGICO",v:"SIM",de:6},
+ /* todas as fases */
  {k:"acidentes",r:"ACIDENTES DOMESTICOS",v:"NEGA"},
- {k:"violencia",r:"SINAIS DE VIOLENCIA OU NEGLIGENCIAS",v:"NÃO"},
- {k:"odonto",r:"ACOMPANHAMENTO ODONTOLOGICO",v:"SIM",de:12},
- {k:"lacos",r:"LAÇOS DE AFETO",v:"OK"},
- {k:"interacao",r:"INTERAÇÃO MÃE-FILHO",v:"ADEQUADO"}];
+ {k:"violencia",r:"SINAIS DE VIOLENCIAS/NEGLIGENCIAS",v:"NÃO"}];
 
 /* ===== EXAME FÍSICO PADRÃO, POR IDADE ===== */
 function exameBase(m){
@@ -554,10 +558,17 @@ function bAlerta(){
  return bloco("S","Sinais de alerta",n?'<b style="color:var(--brasa)">'+n+' presente'+(n>1?"s":"")+'</b>':"nenhum presente",h);
 }
 
+function faseCuidados(m){
+ if(m==null)return"";
+ return m<2?"1º mês":m<4?"2º mês":m<6?"4º mês":"6º mês em diante";
+}
 function bHabitos(){
  const m=idadeAv();
  const lista=HABITOS.filter(h=>(h.de==null||m==null||m>=h.de)&&(h.ate==null||m==null||m<h.ate));
- return bloco("S","Hábitos e cuidados","campo vazio não sai no texto",pares("hab",lista));
+ const f=faseCuidados(m);
+ const h='<p class="mini"><b>## HABITOS E CUIDADOS:</b> — Caderneta da Criança, "Atenção e cuidados especiais nesta fase"'+
+  (f?' · fase: <b>'+f+'</b>':'')+'</p>'+pares("hab",lista);
+ return bloco("S","Hábitos e cuidados","campo vazio não sai no texto",h);
 }
 
 function bAntro(){
