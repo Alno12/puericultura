@@ -266,6 +266,7 @@ const MEDS=["VITAMINA D 200UI - 2 GOTAS 1 X AO DIA","VITAMINA A + D - 2 GOTAS 1 
 const ALEIT6=["ALEITAMENTO MATERNO EXCLUSIVO","ALEITAMENTO MATERNO + LEITE ARTIFICIAL","LEITE ARTIFICIAL"];
 const MARCAS=["NESTOGENO","APTAMIL","NAN","NINHO"];
 const CONJUNTO=["EM ACOMPANHAMENTO CONJUNTO NA U.M.I.","EM ACOMPANHAMENTO CONJUNTO COM PEDIATRIA","EM ACOMPANHAMENTO COM PEDIATRA PARTICULAR"];
+const UNID_PAROU=["DIAS","MESES","ANOS"];
 const PLANO=["DOU ORIENTAÇÕES","ORIENTO ESTIMULOS PARA IDADE","REFORÇO USO DE SUPLEMENTAÇÃO DE FERRO","REFORÇO USO DE VITAMINA D","ORIENTO ALIMENTAÇÃO COMPLEMENTAR SAUDAVEL","ORIENTO PREVENÇÃO DE ACIDENTES","ORIENTO HIGIENE BUCAL","SOLICITO EXAMES + RETORNO APOS EXAMES","ENCAMINHO A PEDIATRIA","ENCAMINHO A ODONTOLOGIA","ENCAMINHO A FONOAUDIOLOGIA","ENCAMINHO A OFTALMOLOGIA"];
 const AVAL=["ALERTA PARA O DESENVOLVIMENTO","ATRASO NA FALA","HERNIA UMBILICAL","DERMATITE DE FRALDAS","OBSTRUÇÃO DE CANAL LACRIMAL","REFLUXO GASTROESOFAGICO FISIOLOGICO","CONSTIPAÇÃO INTESTINAL","QUADRO GRIPAL","ANEMIA FERROPRIVA"];
 const ACOMPS=["DA MÃE","DO PAI","DOS PAIS","DA AVÓ MATERNA","DA AVÓ PATERNA","DA TIA","DO RESPONSÁVEL","—"];
@@ -283,7 +284,7 @@ const hoje=new Date().toISOString().slice(0,10);
 let E={};
 function zerar(){E={sexo:E.sexo||"F",consulta:E.consulta||"2m",nome:"",dn:"",dc:hoje,ig:"",igd:"",
  acompRot:E.acompRot||"DA MÃE",acompNome:"",nascOn:false,nasc:{},
- aleit:"",lm:false,la:false,marca:"",dific:"SEM",dificTxt:"",parou:false,parouMes:"",parouMotivo:"",
+ aleit:"",lm:false,la:false,marca:"",aleitObs:"",dific:"",dificTxt:"",parou:false,parouMes:"",parouUnid:"MESES",parouMotivo:"",
  complementar:"",frutas:"",indust:"",conjunto:"",
  vacinas:"DE ACORDO AO CALENDARIO",meds:{},medsTxt:"",queixas:"",hab:{},alertas:{},
  peso:"",comp:"",pc:"",exame:"",exameEd:false,
@@ -455,6 +456,7 @@ function bAlim(){
  }else{
   h+=pils("aleit",ALEIT6);
  }
+ h+='<div class="grade" style="margin-top:9px">'+inp("aleitObs","Outras informações (some após a escolha, com um –)","EX.: MAMA A LIVRE DEMANDA",320)+'</div>';
  if(usaLA){
   h+='<div style="margin-top:9px;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">'+
    '<div class="pilulas">'+MARCAS.map(x=>'<button class="pil" data-pil="marca" data-v="'+x+'" aria-pressed="'+(E.marca===x?"true":"false")+'">'+x+'</button>').join("")+'</div>'+
@@ -471,12 +473,15 @@ function bAlim(){
  h+='<div class="toggles" style="margin-top:12px;align-items:center">'+
   '<button class="tg" data-bool="parou" aria-pressed="'+(E.parou?"true":"false")+'"><span class="mark"></span>PAROU DE AMAMENTAR AOS</button>'+
   '<input data-in="parouMes" data-foco="parouMes" value="'+esc(E.parouMes)+'" placeholder="X" style="width:64px;border:1px solid var(--linha);border-radius:var(--r);padding:5px 9px" autocomplete="off">'+
-  '<span style="color:var(--tinta2)">MESES</span></div>';
+  '<div class="pilulas">'+UNID_PAROU.map(u=>'<button class="pil" data-pil="parouUnid" data-v="'+u+'" aria-pressed="'+(E.parouUnid===u?"true":"false")+'">'+u+'</button>').join("")+'</div></div>';
  if(E.parou)h+='<div class="grade" style="margin-top:9px">'+inp("parouMotivo","Motivo do desmame","RETORNO AO TRABALHO",280)+'</div>';
  if(m==null||m>=4)h+='<div class="grade" style="margin-top:12px">'+ta("complementar","Alimentação complementar","COME DE TUDO - FRUTAS, ARROZ, FEIJÃO, LEGUMES, VERDURA, CARNE, OVOS")+'</div>'+
    '<div class="grade" style="margin-top:9px">'+inp("frutas","Frutas por dia","2 A 3 X POR DIA",170)+inp("indust","Alimentos industrializados","NÃO",200)+'</div>';
- h+='<div style="margin-top:10px">'+pils("conjunto",CONJUNTO)+'</div>';
  return bloco("S","Aleitamento e alimentação","",h);
+}
+
+function bAcomp(){
+ return bloco("S","Acompanhamento","",pils("conjunto",CONJUNTO));
 }
 
 function bQueixas(){
@@ -608,16 +613,18 @@ function gerarTexto(){
  const mi=idadeAv(),seis=(mi!=null&&mi>=6),ate6=(mi==null||mi<7);
  let leite=seis?[E.lm?"LEITE MATERNO":"",E.la?"LEITE ARTIFICIAL":""].filter(Boolean).join(" + "):E.aleit;
  if(leite&&leite.indexOf("LEITE ARTIFICIAL")>=0&&E.marca)leite+=" - "+E.marca;
+ if(leite&&E.aleitObs)leite+=" - "+E.aleitObs;
  if(leite)L.push(leite);
  if(ate6&&E.dific)L.push(E.dific==="SEM"?"SEM DIFICULDADES PARA AMAMENTAR"
    :"COM DIFICULDADES PARA AMAMENTAR"+(E.dificTxt?" - "+E.dificTxt:""));
- if(E.parou)L.push("PAROU DE AMAMENTAR AOS "+(E.parouMes||"__")+" MESES");
+ if(E.parou)L.push("PAROU DE AMAMENTAR AOS "+(E.parouMes||"__")+" "+(E.parouUnid||"MESES"));
  if(E.parou&&E.parouMotivo)L.push("MOTIVO DO DESMAME: "+E.parouMotivo);
  if(E.complementar)L.push("ALIMENTAÇÃO COMPLEMENTAR = "+E.complementar);
  if(E.frutas)L.push("FRUTAS "+E.frutas);
  if(E.indust)L.push("ALIMENTOS INDUSTRIALIZADOS = "+E.indust);
- if(E.conjunto)L.push(E.conjunto);
  L.push("","");
+
+ if(E.conjunto){L.push(E.conjunto);L.push("");}
 
  if(E.vacinas){L.push("## VACINAS");L.push(bullet(E.vacinas));L.push("");}
  const md=Object.keys(E.meds).filter(k=>E.meds[k]),mx=linhas(E.medsTxt);
@@ -678,7 +685,7 @@ function gerar(){
 function render(){
  const at=document.activeElement,fo=at&&at.dataset?at.dataset.foco:null,pos=at&&at.selectionStart!=null?at.selectionStart:null;
  nB=0;
- $("#form").innerHTML=bNasc()+bQueixas()+bAlim()+bVacMeds()+bAlerta()+bHabitos()+bAntro()+bExame()+bDesenv()+bAval()+bPlano();
+ $("#form").innerHTML=bNasc()+bQueixas()+bAlim()+bAcomp()+bVacMeds()+bAlerta()+bHabitos()+bAntro()+bExame()+bDesenv()+bAval()+bPlano();
  if(fo){const el=$('#form [data-foco="'+fo+'"]');if(el){el.focus();
   if(pos!=null&&el.setSelectionRange)try{el.setSelectionRange(pos,pos)}catch(e){}}}
  renderRegua();renderIdade();gerar();
