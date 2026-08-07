@@ -870,7 +870,9 @@ $("#regua").addEventListener("click",function(e){
  render();window.scrollTo({top:0,behavior:"smooth"});});
 $("#sexo").addEventListener("click",function(e){
  const b=e.target.closest("button[data-s]");if(!b)return;E.sexo=b.dataset.s;
- [].forEach.call(this.querySelectorAll("button"),x=>x.setAttribute("aria-pressed",x===b?"true":"false"));render();});
+ [].forEach.call(this.querySelectorAll("button"),x=>x.setAttribute("aria-pressed",x===b?"true":"false"));
+ if(!E.exameEd)E.exame=exameBase(idadeAv()||0);
+ render();});
 $("#btnNasc").addEventListener("click",function(){E.nascOn=!E.nascOn;
  this.setAttribute("aria-pressed",E.nascOn);render();});
 ["nome","dn","dc","ig","igd","acompNome","acompOutro"].forEach(function(k){
