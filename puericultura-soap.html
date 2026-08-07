@@ -105,15 +105,15 @@ textarea.codigo{font-family:var(--mono);font-size:12.5px;line-height:1.5;min-hei
 .par input:placeholder-shown{background:#F4F7F6;color:var(--tinta3)}
 /* o texto do prontuário é guardado em caixa normal; na tela os rótulos
    que vêm dele continuam aparecendo em maiúsculas */
-.cx,.par label,.linha-alerta .rot-alerta,.linha-exame .rot-exame,#acompRot{text-transform:uppercase}
+.cx,.par label,.linha-alerta .rot-alerta,.linha-exame .rot-exame,.linha-hab .rot-hab,#acompRot{text-transform:uppercase}
 
 /* sinais de alerta: rótulo + presente/ausente + observação */
-.linha-alerta,.linha-exame{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:6px}
-.linha-alerta .rot-alerta,.linha-exame .rot-exame{font-family:var(--ui);font-size:12px;letter-spacing:.04em;color:var(--tinta2);flex:0 0 210px}
+.linha-alerta,.linha-exame,.linha-hab{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:6px}
+.linha-alerta .rot-alerta,.linha-exame .rot-exame,.linha-hab .rot-hab{font-family:var(--ui);font-size:12px;letter-spacing:.04em;color:var(--tinta2);flex:0 0 210px}
 .linha-alerta .pil{padding:4px 11px;font-size:12.5px}
 .linha-alerta .pil[data-v="PRESENTE"][aria-pressed="true"]{background:var(--brasa);border-color:var(--brasa);color:#fff}
 .linha-alerta .pil[data-v="AUSENTE"][aria-pressed="true"]{background:var(--petroleo);border-color:var(--petroleo);color:#fff}
-@media(max-width:640px){.linha-alerta .rot-alerta,.linha-exame .rot-exame{flex:1 0 100%}}
+@media(max-width:640px){.linha-alerta .rot-alerta,.linha-exame .rot-exame,.linha-hab .rot-hab{flex:1 0 100%}}
 
 /* sugestões de texto bem apagadas */
 input::placeholder,textarea::placeholder{color:#C9D4D8;opacity:1}
@@ -255,26 +255,26 @@ function rotAlerta(m){return m<6?"Sem sinais de alerta, tais como":"Sem sinais d
    1º mês (pág. 69) · 2º mês (pág. 70) · 4º mês (pág. 71) · 6º ao 36º mês (pág. 72 a 74) */
 const HABITOS=[
  /* antes de 1 mês */
- {k:"localSono",r:"Local que dorme",ph:"berço",ate:1},
+ {k:"localSono",r:"Local que dorme",opts:["Berço","Ninho","Cama com os pais"],ate:1},
  /* 1º e 2º mês */
- {k:"sono",r:"Tempo de sono em 24 horas",ph:"adequado",de:1,ate:4},
- {k:"posSono",r:"Posição no sono",ph:"barriga para cima",ate:4},
- {k:"trocaPos",r:"Troca de posição durante o dia",ph:"sim",de:2,ate:4},
+ {k:"sono",r:"Tempo de sono em 24 horas",opts:["Adequado"],de:1,ate:4},
+ {k:"posSono",r:"Posição no sono",opts:["Barriga para cima","De lado"],ate:4},
+ {k:"trocaPos",r:"Troca de posição durante o dia",opts:["Sim"],de:2,ate:4},
  /* até o 4º mês */
- {k:"intestinal",r:"Hábito intestinal",ph:"diário",ate:6},
- {k:"higiene",r:"Higiene e cuidados gerais",ph:"adequados",ate:6},
- {k:"bucal",r:"Orientações sobre saúde bucal",ph:"orientado",de:2,ate:6},
- {k:"sf",r:"Uso de soro fisiológico nasal",ph:"não - oriento",de:2,ate:6},
+ {k:"intestinal",r:"Hábito intestinal",opts:["Diário"],ate:6},
+ {k:"higiene",r:"Higiene e cuidados gerais",opts:["Adequados"],ate:6},
+ {k:"bucal",r:"Orientações sobre saúde bucal",opts:["Orientado"],de:2,ate:6},
+ {k:"sf",r:"Uso de soro fisiológico nasal",opts:["Não","Sim"],de:2,ate:6},
  /* 6º mês em diante */
- {k:"supFe",r:"Suplementação de Fe/micronutrientes",ph:"sim",de:6},
- {k:"supVitA",r:"Suplementação de vitamina A",ph:"sim",de:6},
- {k:"odonto",r:"Acompanhamento odontológico",ph:"sim",de:6},
+ {k:"supFe",r:"Suplementação de Fe/micronutrientes",opts:["Não","Sim"],de:6},
+ {k:"supVitA",r:"Suplementação de vitamina A",opts:["Sim"],de:6},
+ {k:"odonto",r:"Acompanhamento odontológico",opts:["Sim"],de:6},
  /* todas as fases */
- {k:"acidentes",r:"Acidentes domésticos",ph:"nega"},
- {k:"violencia",r:"Sinais de violências/negligências",ph:"não"},
+ {k:"acidentes",r:"Acidentes domésticos",opts:["Nega"]},
+ {k:"violencia",r:"Sinais de violências/negligências",opts:["Não","Sim"]},
  /* a partir de 1 mês */
- {k:"lacos",r:"Laços de afeto",ph:"ok",de:1},
- {k:"interacao",r:"Interação mãe-filho",ph:"adequado",de:1}];
+ {k:"lacos",r:"Laços de afeto",opts:["Adequado"],de:1},
+ {k:"interacao",r:"Interação mãe-filho",opts:["Adequado"],de:1}];
 
 /* ===== EXAME FÍSICO, POR LINHA ===== */
 const EXAME_ITENS=[
@@ -291,16 +291,28 @@ const EXAME_ITENS=[
  {k:"genit",r:"Genitália",n:()=>"Genitália sem alterações"},
  {k:"perineo",r:"Períneo",n:()=>"Períneo sem alterações"},
  {k:"coluna",r:"Coluna vertebral",n:()=>"Palpação de coluna vertebral sem alterações"},
- {k:"geral",r:"Estado geral",n:()=>E.sexo==="F"?"Hidratada, corada, anictérica, acianótica":"Hidratado, corado, anictérico, acianótico"},
+ {k:"geral",r:"Estado geral"},
  {k:"perfusao",r:"Perfusão",n:()=>"Perfusão adequada"},
  {k:"atividade",r:"Atividade",n:()=>E.sexo==="F"?"Ativa, reativa":"Ativo, reativo"},
  {k:"reflexos",r:"Reflexos",n:()=>"Reflexos adequados"}];
-function statusExame(k){return E.exameStatus[k]||"normal";}
+const GERAL_ADJ=[["hidratado","Hidratado","Hidratada"],["corado","Corado","Corada"],
+ ["anicterico","Anictérico","Anictérica"],["acianotico","Acianótico","Acianótica"]];
+function statusExame(k){return E.exameStatus[k]||"";}
+function linhaGeral(){
+ const fem=E.sexo==="F";
+ const on=GERAL_ADJ.filter(a=>E.geralCk[a[0]]).map(a=>(fem?a[2]:a[1]).toLowerCase());
+ const comp=(E.exameTxt.geral||"").trim();
+ if(!on.length&&!comp)return null;
+ if(!on.length)return comp;
+ const frase=on.join(", ");
+ return frase.charAt(0).toUpperCase()+frase.slice(1)+(comp?" - "+comp:"");
+}
 function linhaExameItem(it,m){
+ if(it.k==="geral")return linhaGeral();
  const st=statusExame(it.k);
- if(st==="omitir")return null;
  if(st==="alterado")return(E.exameTxt[it.k]||"").trim()||it.r;
- return it.n(m);
+ if(st==="normal")return it.n(m);
+ return null;
 }
 function linhasExameFisico(m){
  const dedupFont=statusExame("fontAnt")==="normal"&&statusExame("fontPost")==="normal"&&m!=null&&m>=20;
@@ -309,6 +321,7 @@ function linhasExameFisico(m){
   if(it.k==="fontPost"&&dedupFont)return;
   const l=linhaExameItem(it,m);if(l!=null)L.push(l);
  });
+ linhas(E.exameObs).forEach(x=>L.push(x));
  return L;
 }
 const ACHADOS=[
@@ -353,9 +366,9 @@ function zerar(){E={sexo:E.sexo||"F",consulta:E.consulta||"2m",nome:"",dn:"",dc:
  acompRot:E.acompRot||"da mãe",acompOutro:"",acompNome:"",nascOn:false,nasc:{},
  aleit:"",lm:false,la:false,marca:"",aleitObs:"",dific:"",dificTxt:"",parou:false,parouMes:"",parouUnid:"MESES",parouMotivo:"",
  complementar:"",frutas:"",indust:"",conjuntos:{},conjuntoDet:{},acompTxt:"",
- vacinas:"",vacComp:"",meds:{},medsDet:{},medsTxt:"",queixas:"",semQueixas:false,hab:{},habTxt:"",
+ vacinas:"",vacComp:"",meds:{},medsDet:{},medsTxt:"",queixas:"",semQueixas:false,habOpt:{},habComp:{},habTxt:"",
  alertas:{},alertaDet:{},alertaExtra:"",
- peso:"",comp:"",pc:"",exameStatus:{},exameTxt:{},
+ peso:"",comp:"",pc:"",exameStatus:{},exameTxt:{},geralCk:{},exameObs:"",
  marcosModo:"resumo",marcos:{},marcosObs:"",mchat:"",fatores:{},pcZ:false,fenot:false,
  aval:{},avalTxt:"",plano:{},planoTxt:"",retorno:"",redeApoio:"adequada",anticoncep:"",
  caixaAlta:E.caixaAlta!==false,semAcento:!!E.semAcento,_tocou:false};}
@@ -632,9 +645,19 @@ function bHabitos(){
  const m=idadeAv();
  const lista=HABITOS.filter(h=>(h.de==null||m==null||m>=h.de)&&(h.ate==null||m==null||m<h.ate));
  const f=faseCuidados(m);
- const h='<p class="mini"><b>## HABITOS E CUIDADOS:</b> — Caderneta da Criança, "Atenção e cuidados especiais nesta fase"'+
-  (f?' · fase: <b>'+f+'</b>':'')+'</p>'+pares("hab",lista)+
-  '<div class="grade" style="margin-top:10px">'+ta("habTxt","Outras informações","- orientado sobre prevenção de acidentes","codigo")+'</div>';
+ let h='<p class="mini"><b>## HABITOS E CUIDADOS:</b> — Caderneta da Criança, "Atenção e cuidados especiais nesta fase"'+
+  (f?' · fase: <b>'+f+'</b>':'')+'</p>';
+ h+=lista.map(function(hh){
+  const v=E.habOpt[hh.k]||"";
+  return '<div class="linha-hab">'+
+   '<span class="rot-hab">'+esc(hh.r)+'</span>'+
+   '<div class="pilulas">'+hh.opts.map(o=>'<button class="pil cx" data-tri="habOpt" data-key="'+hh.k+'" data-v="'+esc(o)+
+    '" aria-pressed="'+(v===o?"true":"false")+'">'+esc(o)+'</button>').join("")+'</div>'+
+   '<input data-par="habComp" data-key="'+hh.k+'" data-foco="habComp'+hh.k+'" value="'+esc(E.habComp[hh.k]||"")+
+    '" placeholder="complementar" style="flex:1;min-width:150px;border:1px solid var(--linha);border-radius:var(--r);padding:4px 9px" autocomplete="off">'+
+   '</div>';
+ }).join("");
+ h+='<div class="grade" style="margin-top:10px">'+ta("habTxt","Outras informações","- orientado sobre prevenção de acidentes","codigo")+'</div>';
  return bloco("S","Hábitos e cuidados","campo vazio não sai no texto",h);
 }
 
@@ -658,22 +681,35 @@ function bAntro(){
  return bloco("O","Antropometria","escore-z e percentil automáticos",h);
 }
 
-const STATUS_EXAME=[["normal","Normal"],["alterado","Alterado"],["omitir","Omitir"]];
-function bExame(){
- let h=EXAME_ITENS.map(function(it){
-  const st=statusExame(it.k);
+const STATUS_EXAME=[["","—"],["normal","Normal"],["alterado","Alterado"],["omitir","Omitir"]];
+function linhaExameCampo(it){
+ if(it.k==="geral")
   return '<div class="linha-exame">'+
    '<span class="rot-exame">'+esc(it.r)+'</span>'+
-   '<select data-sel="exameStatus" data-key="'+it.k+'" style="width:110px">'+
-    STATUS_EXAME.map(o=>'<option value="'+o[0]+'"'+(st===o[0]?" selected":"")+'>'+o[1]+'</option>').join("")+
-   '</select>'+
-   '<input data-par="exameTxt" data-key="'+it.k+'" data-foco="exameTxt'+it.k+'" value="'+esc(E.exameTxt[it.k]||"")+
-    '" placeholder="'+(st==="alterado"?"descreva a alteração":"")+'" style="flex:1;min-width:170px;border:1px solid var(--linha);border-radius:var(--r);padding:4px 9px" autocomplete="off">'+
+   '<div class="pilulas">'+GERAL_ADJ.map(a=>'<button class="tg verde cx" data-map="geralCk" data-key="'+a[0]+
+    '" aria-pressed="'+(E.geralCk[a[0]]?"true":"false")+'"><span class="mark"></span>'+(E.sexo==="F"?a[2]:a[1])+'</button>').join("")+'</div>'+
+   '<input data-par="exameTxt" data-key="geral" data-foco="exameTxtgeral" value="'+esc(E.exameTxt.geral||"")+
+    '" placeholder="complementar" style="flex:1;min-width:170px;border:1px solid var(--linha);border-radius:var(--r);padding:4px 9px" autocomplete="off">'+
    '</div>';
- }).join("");
- h+='<p class="mini" style="margin:9px 0 5px">Achados rápidos — marca a linha como Alterado:</p>'+
-  '<div class="pilulas">'+achadosExame().map(a=>'<button class="pil add cx" data-addrow="exameStatus" data-key="'+a.k+'" data-v="'+esc(a.v)+'">+ '+esc(a.v)+'</button>').join("")+'</div>';
- return bloco("O","Exame físico",'<button class="btn-mini" data-acao="resetExame">tudo normal</button>',h);
+ const st=statusExame(it.k);
+ return '<div class="linha-exame">'+
+  '<span class="rot-exame">'+esc(it.r)+'</span>'+
+  '<select data-sel="exameStatus" data-key="'+it.k+'" style="width:110px">'+
+   STATUS_EXAME.map(o=>'<option value="'+o[0]+'"'+(st===o[0]?" selected":"")+'>'+o[1]+'</option>').join("")+
+  '</select>'+
+  '<input data-par="exameTxt" data-key="'+it.k+'" data-foco="exameTxt'+it.k+'" value="'+esc(E.exameTxt[it.k]||"")+
+   '" placeholder="'+(st==="alterado"?"descreva a alteração":"")+'" style="flex:1;min-width:170px;border:1px solid var(--linha);border-radius:var(--r);padding:4px 9px" autocomplete="off">'+
+  '</div>';
+}
+function bExame(){
+ let h=EXAME_ITENS.map(linhaExameCampo).join("");
+ h+='<p class="mini" style="margin:9px 0 5px">Achados rápidos:</p>'+
+  '<div class="pilulas">'+achadosExame().map(a=>a.k==="geral"?
+   '<button class="pil add cx" data-offmap="geralCk" data-key="corado">+ '+esc(a.v)+'</button>':
+   '<button class="pil add cx" data-addrow="exameStatus" data-key="'+a.k+'" data-v="'+esc(a.v)+'">+ '+esc(a.v)+'</button>').join("")+'</div>'+
+  '<div class="grade" style="margin-top:10px">'+ta("exameObs","Outras observações","- reavaliar na próxima consulta","codigo")+'</div>';
+ return bloco("O","Exame físico",'<button class="btn-mini" data-acao="resetExame">tudo normal</button> '+
+  '<button class="btn-mini" data-acao="omitirExame">omitir tudo</button>',h);
 }
 
 function bDesenv(){
@@ -798,7 +834,11 @@ function gerarTexto(){
   L.push("");
  }
  const hb=[];
- habVisiveis().forEach(h=>{const v=String(valPar("hab",h)).trim();if(v)hb.push(h.frase?v:h.r+" = "+v);});
+ habVisiveis().forEach(function(hh){
+  const opt=E.habOpt[hh.k]||"",comp=(E.habComp[hh.k]||"").trim();
+  if(!opt&&!comp)return;
+  hb.push(hh.r+" = "+(opt?(comp?opt+" - "+comp:opt):comp));
+ });
  linhas(E.habTxt).forEach(x=>hb.push(x));
  if(hb.length){L.push("## HABITOS E CUIDADOS:");L.push.apply(L,hb);L.push("");}
 
@@ -880,7 +920,10 @@ function renderIdade(){
 function acao(a){
  if(a==="todosSim"){const f=faixaDe(idadeAv());if(f)f.itens.forEach(i=>{E.marcos[i[0]]="SIM";});}
  if(a==="limpaMarcos")E.marcos={};
- if(a==="resetExame"){E.exameStatus={};E.exameTxt={};}
+ if(a==="resetExame"){EXAME_ITENS.forEach(it=>{if(it.k!=="geral")E.exameStatus[it.k]="normal";});
+  GERAL_ADJ.forEach(g=>E.geralCk[g[0]]=true);E.exameTxt={};}
+ if(a==="omitirExame"){EXAME_ITENS.forEach(it=>{if(it.k!=="geral")E.exameStatus[it.k]="omitir";});
+  GERAL_ADJ.forEach(g=>E.geralCk[g[0]]=false);}
  if(a==="fecharNasc"){E.nascOn=false;$("#btnNasc").setAttribute("aria-pressed","false");}
  if(a==="todosAusentes")listaAlerta(idadeAv()||0).forEach(x=>{if(E.alertas[x]!=="PRESENTE")E.alertas[x]="AUSENTE";});
  if(a==="limpaAlertas"){E.alertas={};E.alertaDet={};}
@@ -905,6 +948,7 @@ F.addEventListener("click",function(e){
  else if(d.marco)E.marcos[d.marco]=(E.marcos[d.marco]===d.v?"":d.v);
  else if(d.addrow){E[d.addrow][d.key]="alterado";
   E.exameTxt[d.key]=(E.exameTxt[d.key]?E.exameTxt[d.key]+"; ":"")+d.v;}
+ else if(d.offmap)E[d.offmap][d.key]=false;
  else if(d.acao)acao(d.acao);
  else return;
  render();
