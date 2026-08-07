@@ -105,15 +105,15 @@ textarea.codigo{font-family:var(--mono);font-size:12.5px;line-height:1.5;min-hei
 .par input:placeholder-shown{background:#F4F7F6;color:var(--tinta3)}
 /* o texto do prontuário é guardado em caixa normal; na tela os rótulos
    que vêm dele continuam aparecendo em maiúsculas */
-.cx,.par label,.linha-alerta .rot-alerta,#acompRot{text-transform:uppercase}
+.cx,.par label,.linha-alerta .rot-alerta,.linha-exame .rot-exame,#acompRot{text-transform:uppercase}
 
 /* sinais de alerta: rótulo + presente/ausente + observação */
-.linha-alerta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:6px}
-.linha-alerta .rot-alerta{font-family:var(--ui);font-size:12px;letter-spacing:.04em;color:var(--tinta2);flex:0 0 210px}
+.linha-alerta,.linha-exame{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:6px}
+.linha-alerta .rot-alerta,.linha-exame .rot-exame{font-family:var(--ui);font-size:12px;letter-spacing:.04em;color:var(--tinta2);flex:0 0 210px}
 .linha-alerta .pil{padding:4px 11px;font-size:12.5px}
 .linha-alerta .pil[data-v="PRESENTE"][aria-pressed="true"]{background:var(--brasa);border-color:var(--brasa);color:#fff}
 .linha-alerta .pil[data-v="AUSENTE"][aria-pressed="true"]{background:var(--petroleo);border-color:var(--petroleo);color:#fff}
-@media(max-width:640px){.linha-alerta .rot-alerta{flex:1 0 100%}}
+@media(max-width:640px){.linha-alerta .rot-alerta,.linha-exame .rot-exame{flex:1 0 100%}}
 
 /* sugestões de texto bem apagadas */
 input::placeholder,textarea::placeholder{color:#C9D4D8;opacity:1}
@@ -276,24 +276,55 @@ const HABITOS=[
  {k:"lacos",r:"Laços de afeto",ph:"ok",de:1},
  {k:"interacao",r:"Interação mãe-filho",ph:"adequado",de:1}];
 
-/* ===== EXAME FÍSICO PADRÃO, POR IDADE ===== */
-function exameBase(m){
- const fem=E.sexo==="F";
- const L=["BNF R 2T SS","MV + bilateral SRA"];
- L.push(m<1.2?"Abdome inocente, RHA + normofonéticos - coto umbilical sem sinais de infecção":"Abdome inocente, RHA + normofonéticos");
- if(m<20){L.push("Fontanela anterior aberta e normotensa");L.push("Fontanela posterior fechada");}
- else L.push("Fontanelas fechadas");
- L.push("Exame ocular sem alterações","TRV normal","Oroscopia sem alterações","Otoscopia sem alterações",
-  "Ectoscopia sem alterações","Genitália sem alterações","Períneo sem alterações",
-  fem?"Hidratada, corada, anictérica, acianótica":"Hidratado, corado, anictérico, acianótico","Perfusão adequada");
- L.push(m<3?"Reflexos primitivos adequados":"Reflexos adequados");
- return L.join("\n");
+/* ===== EXAME FÍSICO, POR LINHA ===== */
+const EXAME_ITENS=[
+ {k:"ausc",r:"Ausculta cardíaca",n:()=>"BNF R 2T SS"},
+ {k:"resp",r:"Aparelho respiratório",n:()=>"MV + bilateral SRA"},
+ {k:"abdome",r:"Abdome",n:()=>"Abdome inocente"},
+ {k:"ocular",r:"Exame ocular",n:()=>"Exame ocular sem alterações"},
+ {k:"trv",r:"Teste do reflexo vermelho",n:()=>"TRV normal"},
+ {k:"fontAnt",r:"Fontanela anterior",n:m=>m!=null&&m>=20?"Fontanelas fechadas":"Fontanela anterior aberta e normotensa"},
+ {k:"fontPost",r:"Fontanela posterior",n:m=>m!=null&&m>=20?"Fontanelas fechadas":"Fontanela posterior aberta e normotensa"},
+ {k:"oro",r:"Oroscopia",n:()=>"Oroscopia sem alterações"},
+ {k:"oto",r:"Otoscopia",n:()=>"Otoscopia sem alterações"},
+ {k:"ecto",r:"Ectoscopia",n:()=>"Ectoscopia sem alterações"},
+ {k:"genit",r:"Genitália",n:()=>"Genitália sem alterações"},
+ {k:"perineo",r:"Períneo",n:()=>"Períneo sem alterações"},
+ {k:"coluna",r:"Coluna vertebral",n:()=>"Palpação de coluna vertebral sem alterações"},
+ {k:"geral",r:"Estado geral",n:()=>E.sexo==="F"?"Hidratada, corada, anictérica, acianótica":"Hidratado, corado, anictérico, acianótico"},
+ {k:"perfusao",r:"Perfusão",n:()=>"Perfusão adequada"},
+ {k:"atividade",r:"Atividade",n:()=>E.sexo==="F"?"Ativa, reativa":"Ativo, reativo"},
+ {k:"reflexos",r:"Reflexos",n:()=>"Reflexos adequados"}];
+function statusExame(k){return E.exameStatus[k]||"normal";}
+function linhaExameItem(it,m){
+ const st=statusExame(it.k);
+ if(st==="omitir")return null;
+ if(st==="alterado")return(E.exameTxt[it.k]||"").trim()||it.r;
+ return it.n(m);
 }
-const ACHADOS=["Abdome com presença de hérnia umbilical, sem sinais flogísticos locais","Hipocorado","Ectoscopia com pápulas hiperemiadas em face e região cervical","Oroscopia com hiperemia de orofaringe","Otoscopia com hiperemia de membrana timpânica","TRV não realizado","Secreção ocular / lacrimejamento","Criptorquidia","Fimose fisiológica","Sinéquia de pequenos lábios"];
+function linhasExameFisico(m){
+ const dedupFont=statusExame("fontAnt")==="normal"&&statusExame("fontPost")==="normal"&&m!=null&&m>=20;
+ const L=[];
+ EXAME_ITENS.forEach(it=>{
+  if(it.k==="fontPost"&&dedupFont)return;
+  const l=linhaExameItem(it,m);if(l!=null)L.push(l);
+ });
+ return L;
+}
+const ACHADOS=[
+ {k:"abdome",v:"Abdome com presença de hérnia umbilical, sem sinais flogísticos locais"},
+ {k:"geral",v:"Hipocorado"},
+ {k:"ecto",v:"Ectoscopia com pápulas hiperemiadas em face e região cervical"},
+ {k:"oro",v:"Oroscopia com hiperemia de orofaringe"},
+ {k:"oto",v:"Otoscopia com hiperemia de membrana timpânica"},
+ {k:"trv",v:"TRV não realizado"},
+ {k:"ocular",v:"Secreção ocular / lacrimejamento"},
+ {k:"genit",v:"Criptorquidia",soSexo:"M"},
+ {k:"genit",v:"Fimose fisiológica",soSexo:"M"},
+ {k:"genit",v:"Sinéquia de pequenos lábios",soSexo:"F"}];
 function achadosExame(){
- const fem=E.sexo==="F",soMasc=["Criptorquidia","Fimose fisiológica"],soFem=["Sinéquia de pequenos lábios"];
- return ACHADOS.filter(a=>!(fem&&soMasc.includes(a))&&!(!fem&&soFem.includes(a)))
-  .map(a=>a==="Hipocorado"&&fem?"Hipocorada":a);
+ return ACHADOS.filter(a=>!a.soSexo||a.soSexo===E.sexo)
+  .map(a=>a.v==="Hipocorado"&&E.sexo==="F"?{k:a.k,v:"Hipocorada"}:a);
 }
 
 /* ===== CHIPS RÁPIDOS ===== */
@@ -322,9 +353,9 @@ function zerar(){E={sexo:E.sexo||"F",consulta:E.consulta||"2m",nome:"",dn:"",dc:
  acompRot:E.acompRot||"da mãe",acompOutro:"",acompNome:"",nascOn:false,nasc:{},
  aleit:"",lm:false,la:false,marca:"",aleitObs:"",dific:"",dificTxt:"",parou:false,parouMes:"",parouUnid:"MESES",parouMotivo:"",
  complementar:"",frutas:"",indust:"",conjuntos:{},conjuntoDet:{},acompTxt:"",
- vacinas:"",vacAtraso:"",meds:{},medsDet:{},medsTxt:"",queixas:"",semQueixas:false,hab:{},habTxt:"",
+ vacinas:"",vacComp:"",meds:{},medsDet:{},medsTxt:"",queixas:"",semQueixas:false,hab:{},habTxt:"",
  alertas:{},alertaDet:{},alertaExtra:"",
- peso:"",comp:"",pc:"",exame:"",exameEd:false,
+ peso:"",comp:"",pc:"",exameStatus:{},exameTxt:{},
  marcosModo:"resumo",marcos:{},marcosObs:"",mchat:"",fatores:{},pcZ:false,fenot:false,
  aval:{},avalTxt:"",plano:{},planoTxt:"",retorno:"",redeApoio:"adequada",anticoncep:"",
  caixaAlta:E.caixaAlta!==false,semAcento:!!E.semAcento,_tocou:false};}
@@ -554,8 +585,8 @@ function bQueixas(){
 }
 function bVacinas(){
  let h='<p class="mini"><b>## VACINAS</b></p>'+pils("vacinas",VAC);
- if(E.vacinas==="VACINAS EM ATRASO")
-  h+='<div class="grade" style="margin-top:9px">'+ta("vacAtraso","Quais vacinas estão em atraso","- BCG\n- tríplice viral","codigo")+'</div>';
+ if(E.vacinas)h+='<div class="grade" style="margin-top:9px">'+ta("vacComp","Complemento",
+   E.vacinas==="Vacinas em atraso"?"- BCG\n- tríplice viral":"- próxima dose agendada para 10/2026","codigo")+'</div>';
  return bloco("S","Vacinas","",h);
 }
 
@@ -627,11 +658,22 @@ function bAntro(){
  return bloco("O","Antropometria","escore-z e percentil automáticos",h);
 }
 
+const STATUS_EXAME=[["normal","Normal"],["alterado","Alterado"],["omitir","Omitir"]];
 function bExame(){
- if(E.exame===""&&!E.exameEd)E.exame=exameBase(idadeAv()||0);
- return bloco("O","Exame físico",'<button class="btn-mini" data-acao="resetExame">restaurar padrão</button>',
-  ta("exame","","","codigo")+'<p class="mini" style="margin:9px 0 5px">Trocar uma linha por um achado:</p>'+
-  '<div class="pilulas">'+achadosExame().map(a=>'<button class="pil add cx" data-add="exame" data-v="'+esc(a)+'">+ '+esc(a)+'</button>').join("")+'</div>');
+ let h=EXAME_ITENS.map(function(it){
+  const st=statusExame(it.k);
+  return '<div class="linha-exame">'+
+   '<span class="rot-exame">'+esc(it.r)+'</span>'+
+   '<select data-sel="exameStatus" data-key="'+it.k+'" style="width:110px">'+
+    STATUS_EXAME.map(o=>'<option value="'+o[0]+'"'+(st===o[0]?" selected":"")+'>'+o[1]+'</option>').join("")+
+   '</select>'+
+   '<input data-par="exameTxt" data-key="'+it.k+'" data-foco="exameTxt'+it.k+'" value="'+esc(E.exameTxt[it.k]||"")+
+    '" placeholder="'+(st==="alterado"?"descreva a alteração":"")+'" style="flex:1;min-width:170px;border:1px solid var(--linha);border-radius:var(--r);padding:4px 9px" autocomplete="off">'+
+   '</div>';
+ }).join("");
+ h+='<p class="mini" style="margin:9px 0 5px">Achados rápidos — marca a linha como Alterado:</p>'+
+  '<div class="pilulas">'+achadosExame().map(a=>'<button class="pil add cx" data-addrow="exameStatus" data-key="'+a.k+'" data-v="'+esc(a.v)+'">+ '+esc(a.v)+'</button>').join("")+'</div>';
+ return bloco("O","Exame físico",'<button class="btn-mini" data-acao="resetExame">tudo normal</button>',h);
 }
 
 function bDesenv(){
@@ -735,7 +777,7 @@ function gerarTexto(){
  }
 
  if(E.vacinas){L.push("## VACINAS");L.push(E.vacinas);
-  if(E.vacinas==="Vacinas em atraso")linhas(E.vacAtraso).forEach(x=>L.push(bullet(x)));
+  linhas(E.vacComp).forEach(x=>L.push(bullet(x)));
   L.push("");}
 
  const md=MEDS.filter(k=>E.meds[k]),mx=linhas(E.medsTxt);
@@ -760,10 +802,10 @@ function gerarTexto(){
  linhas(E.habTxt).forEach(x=>hb.push(x));
  if(hb.length){L.push("## HABITOS E CUIDADOS:");L.push.apply(L,hb);L.push("");}
 
- L.push("O");
+ L.push("EXAME FÍSICO:");
  antropo().linhas.forEach(l=>L.push(linhaAntropoTexto(l)));
  L.push("");
- L.push.apply(L,linhas(E.exame));
+ L.push.apply(L,linhasExameFisico(m));
  L.push("");
  const f=faixaDe(idadeAv());
  if(E.marcosModo==="lista"&&f){
@@ -838,18 +880,21 @@ function renderIdade(){
 function acao(a){
  if(a==="todosSim"){const f=faixaDe(idadeAv());if(f)f.itens.forEach(i=>{E.marcos[i[0]]="SIM";});}
  if(a==="limpaMarcos")E.marcos={};
- if(a==="resetExame"){E.exame=exameBase(idadeAv()||0);E.exameEd=false;}
+ if(a==="resetExame"){E.exameStatus={};E.exameTxt={};}
  if(a==="fecharNasc"){E.nascOn=false;$("#btnNasc").setAttribute("aria-pressed","false");}
  if(a==="todosAusentes")listaAlerta(idadeAv()||0).forEach(x=>{if(E.alertas[x]!=="PRESENTE")E.alertas[x]="AUSENTE";});
  if(a==="limpaAlertas"){E.alertas={};E.alertaDet={};}
 }
 const F=$("#form");
-F.addEventListener("input",function(e){
+function inputChange(e){
  const t=e.target,d=t.dataset;
- if(d.in){E[d.in]=t.value;if(d.in==="exame")E.exameEd=true;if(d.in==="retorno")E._retTocado=true;
+ if(d.in){E[d.in]=t.value;if(d.in==="retorno")E._retTocado=true;
   if(d.in==="peso"||d.in==="comp"||d.in==="pc")render();else gerar();}
  else if(d.par){E[d.par][d.key]=t.value;gerar();}
-});
+ else if(d.sel){E[d.sel][d.key]=t.value;render();}
+}
+F.addEventListener("input",inputChange);
+F.addEventListener("change",inputChange);
 F.addEventListener("click",function(e){
  const b=e.target.closest("button");if(!b)return;const d=b.dataset;
  if(d.map)E[d.map][d.key]=!E[d.map][d.key];
@@ -858,7 +903,8 @@ F.addEventListener("click",function(e){
  else if(d.pil2)E[d.pil2]=(E[d.pil2]===d.v?"":d.v);
  else if(d.tri)E[d.tri][d.key]=(E[d.tri][d.key]===d.v?"":d.v);
  else if(d.marco)E.marcos[d.marco]=(E.marcos[d.marco]===d.v?"":d.v);
- else if(d.add){E[d.add]=(E[d.add]?E[d.add].replace(/\n*$/,"")+"\n":"")+d.v;E.exameEd=true;}
+ else if(d.addrow){E[d.addrow][d.key]="alterado";
+  E.exameTxt[d.key]=(E.exameTxt[d.key]?E.exameTxt[d.key]+"; ":"")+d.v;}
  else if(d.acao)acao(d.acao);
  else return;
  render();
@@ -871,7 +917,6 @@ $("#regua").addEventListener("click",function(e){
 $("#sexo").addEventListener("click",function(e){
  const b=e.target.closest("button[data-s]");if(!b)return;E.sexo=b.dataset.s;
  [].forEach.call(this.querySelectorAll("button"),x=>x.setAttribute("aria-pressed",x===b?"true":"false"));
- if(!E.exameEd)E.exame=exameBase(idadeAv()||0);
  render();});
 $("#btnNasc").addEventListener("click",function(){E.nascOn=!E.nascOn;
  this.setAttribute("aria-pressed",E.nascOn);render();});
@@ -880,7 +925,6 @@ $("#btnNasc").addEventListener("click",function(){E.nascOn=!E.nascOn;
  el.addEventListener("input",function(){E[k]=el.value;
   if(k==="dn"||k==="dc"||k==="ig"||k==="igd"){const s=sugerirConsulta();
    if(s&&!E._tocou){E.consulta=s;if(!E._retTocado)E.retorno=RETORNOS[s]||"";}
-   if(!E.exameEd)E.exame=exameBase(idadeAv()||0);
    render();}else gerar();});});
 const selAc=$("#acompRot");
 selAc.innerHTML=ACOMPS.map(a=>'<option'+(E.acompRot===a?" selected":"")+'>'+a+'</option>').join("");
