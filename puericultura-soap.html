@@ -311,8 +311,15 @@ function linhaExameItem(it,m){
  if(it.k==="geral")return linhaGeral();
  const st=statusExame(it.k);
  if(st==="alterado")return(E.exameTxt[it.k]||"").trim()||it.r;
- if(st==="normal")return it.n(m);
+ if(st==="normal")return(E.exameTxt[it.k]||"").trim()||it.n(m);
  return null;
+}
+function resyncExameAuto(){
+ const m=idadeAv();
+ EXAME_ITENS.forEach(it=>{
+  if(it.k==="geral"||!it.n)return;
+  if(E.exameAuto[it.k]&&statusExame(it.k)==="normal")E.exameTxt[it.k]=it.n(m);
+ });
 }
 function linhasExameFisico(m){
  const dedupFont=statusExame("fontAnt")==="normal"&&statusExame("fontPost")==="normal"&&m!=null&&m>=20;
@@ -368,7 +375,7 @@ function zerar(){E={sexo:E.sexo||"F",consulta:E.consulta||"2m",nome:"",dn:"",dc:
  complementar:"",frutas:"",indust:"",conjuntos:{},conjuntoDet:{},acompTxt:"",
  vacinas:"",vacComp:"",meds:{},medsDet:{},medsTxt:"",queixas:"",semQueixas:false,habOpt:{},habComp:{},habTxt:"",
  alertas:{},alertaDet:{},alertaExtra:"",
- peso:"",comp:"",pc:"",exameStatus:{},exameTxt:{},geralCk:{},exameObs:"",
+ peso:"",comp:"",pc:"",exameStatus:{},exameTxt:{},exameAuto:{},geralCk:{},exameObs:"",
  marcosModo:"resumo",marcos:{},marcosObs:"",mchat:"",fatores:{},pcZ:false,fenot:false,
  aval:{},avalTxt:"",plano:{},planoTxt:"",retorno:"",redeApoio:"adequada",anticoncep:"",
  caixaAlta:E.caixaAlta!==false,semAcento:!!E.semAcento,_tocou:false};}
@@ -464,7 +471,7 @@ function linhaAntropoTexto(l){
  else if(l.ind==="bmi")v="IMC = "+fmt(l.x,2);
  else v=l.rot+" = "+semZero(l.x)+" cm";
  if(l.cl)v+=" - "+l.cl[0];
- if(l.z!=null)v+=" - escore-z "+sinalZ(l.z)+" / percentil "+fmt(l.pc,1);
+ if(l.z!=null)v+=" - Z-score "+sinalZ(l.z)+" / p"+fmt(l.pc,1)+"%";
  return v;
 }
 function classificar(){
@@ -880,7 +887,7 @@ function gerarTexto(){
  return L.join("\n");
 }
 function caixaAlta(t){const g=[];
- t=t.replace(/escore-z [^\n]*?percentil [\d,]+/g,x=>{g.push(x);return"\u0001"+(g.length-1)+"\u0001";});
+ t=t.replace(/Z-score [^\n]*?\/ p[\d,]+%/g,x=>{g.push(x);return"\u0001"+(g.length-1)+"\u0001";});
  return t.toUpperCase().replace(/\u0001(\d+)\u0001/g,(_,i)=>g[+i]);}
 function gerar(){
  let t=gerarTexto();
@@ -920,8 +927,14 @@ function renderIdade(){
 function acao(a){
  if(a==="todosSim"){const f=faixaDe(idadeAv());if(f)f.itens.forEach(i=>{E.marcos[i[0]]="SIM";});}
  if(a==="limpaMarcos")E.marcos={};
- if(a==="resetExame"){EXAME_ITENS.forEach(it=>{if(it.k!=="geral")E.exameStatus[it.k]="normal";});
-  GERAL_ADJ.forEach(g=>E.geralCk[g[0]]=true);E.exameTxt={};}
+ if(a==="resetExame"){const m=idadeAv();
+  EXAME_ITENS.forEach(it=>{
+   if(it.k==="geral")return;
+   if(it.k==="fontPost"){E.exameStatus[it.k]="omitir";return;}
+   E.exameStatus[it.k]="normal";E.exameTxt[it.k]=it.n(m);E.exameAuto[it.k]=true;
+  });
+  E.exameTxt.geral="";
+  GERAL_ADJ.forEach(g=>E.geralCk[g[0]]=true);}
  if(a==="omitirExame"){EXAME_ITENS.forEach(it=>{if(it.k!=="geral")E.exameStatus[it.k]="omitir";});
   GERAL_ADJ.forEach(g=>E.geralCk[g[0]]=false);}
  if(a==="fecharNasc"){E.nascOn=false;$("#btnNasc").setAttribute("aria-pressed","false");}
@@ -933,8 +946,13 @@ function inputChange(e){
  const t=e.target,d=t.dataset;
  if(d.in){E[d.in]=t.value;if(d.in==="retorno")E._retTocado=true;
   if(d.in==="peso"||d.in==="comp"||d.in==="pc")render();else gerar();}
- else if(d.par){E[d.par][d.key]=t.value;gerar();}
- else if(d.sel){E[d.sel][d.key]=t.value;render();}
+ else if(d.par){E[d.par][d.key]=t.value;if(d.par==="exameTxt")E.exameAuto[d.key]=false;gerar();}
+ else if(d.sel){E[d.sel][d.key]=t.value;
+  if(d.sel==="exameStatus"&&t.value==="normal"&&!E.exameTxt[d.key]){
+   const it=EXAME_ITENS.find(x=>x.k===d.key);
+   if(it&&it.n){E.exameTxt[d.key]=it.n(idadeAv());E.exameAuto[d.key]=true;}
+  }
+  render();}
 }
 F.addEventListener("input",inputChange);
 F.addEventListener("change",inputChange);
@@ -961,6 +979,7 @@ $("#regua").addEventListener("click",function(e){
 $("#sexo").addEventListener("click",function(e){
  const b=e.target.closest("button[data-s]");if(!b)return;E.sexo=b.dataset.s;
  [].forEach.call(this.querySelectorAll("button"),x=>x.setAttribute("aria-pressed",x===b?"true":"false"));
+ resyncExameAuto();
  render();});
 $("#btnNasc").addEventListener("click",function(){E.nascOn=!E.nascOn;
  this.setAttribute("aria-pressed",E.nascOn);render();});
@@ -969,6 +988,7 @@ $("#btnNasc").addEventListener("click",function(){E.nascOn=!E.nascOn;
  el.addEventListener("input",function(){E[k]=el.value;
   if(k==="dn"||k==="dc"||k==="ig"||k==="igd"){const s=sugerirConsulta();
    if(s&&!E._tocou){E.consulta=s;if(!E._retTocado)E.retorno=RETORNOS[s]||"";}
+   resyncExameAuto();
    render();}else gerar();});});
 const selAc=$("#acompRot");
 selAc.innerHTML=ACOMPS.map(a=>'<option'+(E.acompRot===a?" selected":"")+'>'+a+'</option>').join("");
