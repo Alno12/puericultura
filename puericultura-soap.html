@@ -278,17 +278,23 @@ const HABITOS=[
 
 /* ===== EXAME FÍSICO PADRÃO, POR IDADE ===== */
 function exameBase(m){
+ const fem=E.sexo==="F";
  const L=["BNF R 2T SS","MV + bilateral SRA"];
  L.push(m<1.2?"Abdome inocente, RHA + normofonéticos - coto umbilical sem sinais de infecção":"Abdome inocente, RHA + normofonéticos");
  if(m<20){L.push("Fontanela anterior aberta e normotensa");L.push("Fontanela posterior fechada");}
  else L.push("Fontanelas fechadas");
  L.push("Exame ocular sem alterações","TRV normal","Oroscopia sem alterações","Otoscopia sem alterações",
   "Ectoscopia sem alterações","Genitália sem alterações","Períneo sem alterações",
-  "Hidratado, corado, anictérico, acianótico","Perfusão adequada");
+  fem?"Hidratada, corada, anictérica, acianótica":"Hidratado, corado, anictérico, acianótico","Perfusão adequada");
  L.push(m<3?"Reflexos primitivos adequados":"Reflexos adequados");
  return L.join("\n");
 }
 const ACHADOS=["Abdome com presença de hérnia umbilical, sem sinais flogísticos locais","Hipocorado","Ectoscopia com pápulas hiperemiadas em face e região cervical","Oroscopia com hiperemia de orofaringe","Otoscopia com hiperemia de membrana timpânica","TRV não realizado","Secreção ocular / lacrimejamento","Criptorquidia","Fimose fisiológica","Sinéquia de pequenos lábios"];
+function achadosExame(){
+ const fem=E.sexo==="F",soMasc=["Criptorquidia","Fimose fisiológica"],soFem=["Sinéquia de pequenos lábios"];
+ return ACHADOS.filter(a=>!(fem&&soMasc.includes(a))&&!(!fem&&soFem.includes(a)))
+  .map(a=>a==="Hipocorado"&&fem?"Hipocorada":a);
+}
 
 /* ===== CHIPS RÁPIDOS ===== */
 const MEDS=["Vitamina D 200UI - 2 gotas 1 x ao dia","Vitamina A + D - 2 gotas 1 x ao dia","Sulfato ferroso - 1 gota por quilo/dia","Nenhum"];
@@ -316,7 +322,7 @@ function zerar(){E={sexo:E.sexo||"F",consulta:E.consulta||"2m",nome:"",dn:"",dc:
  acompRot:E.acompRot||"da mãe",acompOutro:"",acompNome:"",nascOn:false,nasc:{},
  aleit:"",lm:false,la:false,marca:"",aleitObs:"",dific:"",dificTxt:"",parou:false,parouMes:"",parouUnid:"MESES",parouMotivo:"",
  complementar:"",frutas:"",indust:"",conjuntos:{},conjuntoDet:{},acompTxt:"",
- vacinas:"",vacAtraso:"",meds:{},medsDet:{},medsTxt:"",queixas:"",hab:{},habTxt:"",
+ vacinas:"",vacAtraso:"",meds:{},medsDet:{},medsTxt:"",queixas:"",semQueixas:false,hab:{},habTxt:"",
  alertas:{},alertaDet:{},alertaExtra:"",
  peso:"",comp:"",pc:"",exame:"",exameEd:false,
  marcosModo:"resumo",marcos:{},marcosObs:"",mchat:"",fatores:{},pcZ:false,fenot:false,
@@ -542,7 +548,8 @@ function bAcomp(){
 
 function bQueixas(){
  let h='<p class="mini"><b>## QUEIXAS:</b> — uma por linha, com hífen</p>'+
-  '<div class="grade">'+ta("queixas","","- sem queixas no momento","codigo")+'</div>';
+  '<button class="tg verde cx" data-bool="semQueixas" aria-pressed="'+(E.semQueixas?"true":"false")+'"><span class="mark"></span>Sem queixas no momento</button>';
+ if(!E.semQueixas)h+='<div class="grade" style="margin-top:9px">'+ta("queixas","","- mãe refere choro excessivo à noite","codigo")+'</div>';
  return bloco("S","Queixas","",h);
 }
 function bVacinas(){
@@ -624,7 +631,7 @@ function bExame(){
  if(E.exame===""&&!E.exameEd)E.exame=exameBase(idadeAv()||0);
  return bloco("O","Exame físico",'<button class="btn-mini" data-acao="resetExame">restaurar padrão</button>',
   ta("exame","","","codigo")+'<p class="mini" style="margin:9px 0 5px">Trocar uma linha por um achado:</p>'+
-  '<div class="pilulas">'+ACHADOS.map(a=>'<button class="pil add cx" data-add="exame" data-v="'+esc(a)+'">+ '+esc(a)+'</button>').join("")+'</div>');
+  '<div class="pilulas">'+achadosExame().map(a=>'<button class="pil add cx" data-add="exame" data-v="'+esc(a)+'">+ '+esc(a)+'</button>').join("")+'</div>');
 }
 
 function bDesenv(){
@@ -696,10 +703,12 @@ function gerarTexto(){
  L.push(tituloIdade());
  L.push("");
 
- L.push("## QUEIXAS:");
  const q=linhas(E.queixas);
- if(q.length)q.forEach(x=>L.push(bullet(x)));else L.push("- Sem queixas no momento");
- L.push("");
+ if(E.semQueixas||q.length){
+  L.push("## QUEIXAS:");
+  if(E.semQueixas)L.push("- Sem queixas no momento");else q.forEach(x=>L.push(bullet(x)));
+  L.push("");
+ }
 
  L.push("## ALEITAMENTO/ALIMENTAÇÃO:");
  const mi=idadeAv(),seis=(mi!=null&&mi>=6),ate6=(mi==null||mi<7);
